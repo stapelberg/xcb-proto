@@ -1297,6 +1297,39 @@ TODO: reasons?
         <fieldref>children_len</fieldref>
       </list>
     </reply>
+    <doc>
+      <brief>query the window tree</brief>
+      <description><![CDATA[
+Gets the root window ID, parent window ID and list of children windows for the
+specified `window`.
+      ]]></description>
+      <field name="window"><![CDATA[
+The `window` to query.
+      ]]></field>
+      <see type="program" name="xwininfo" />
+      <example><![CDATA[
+/*
+ * Displays the root, parent and children of the specified window.
+ *
+ */
+void my_example(xcb_connection *conn, xcb_window_t window) {
+    xcb_query_tree_cookie_t cookie;
+    xcb_query_tree_reply_t *reply;
+
+    cookie = xcb_query_tree(conn, window);
+    if ((reply = xcb_query_tree_reply(conn, cookie, NULL))) {
+        printf("root = 0x%08x\\n", reply->root);
+        printf("parent = 0x%08x\\n", reply->parent);
+
+        xcb_window_t *children = xcb_query_tree_children(reply);
+        for (int i = 0; i < xcb_query_tree_children_length(reply); i++)
+            printf("child window = 0x%08x\\n", children[i]);
+
+        free(reply);
+    }
+}
+      ]]></example>
+    </doc>
   </request>
 
   <request name="InternAtom" opcode="16">
@@ -2153,6 +2186,47 @@ No font matches the given `name`.
       <field type="INT32" name="overall_left" />
       <field type="INT32" name="overall_right" />
     </reply>
+    <doc>
+      <brief>get text extents</brief>
+      <description><![CDATA[
+Query text extents from the X11 server. This request returns the bounding box
+of the specified 16-bit character string in the specified `font` or the font
+contained in the specified graphics context.
+
+`font_ascent` is set to the maximum of the ascent metrics of all characters in
+the string. `font_descent` is set to the maximum of the descent metrics.
+`overall_width` is set to the sum of the character-width metrics of all
+characters in the string. For each character in the string, let W be the sum of
+the character-width metrics of all characters preceding it in the string. Let L
+be the left-side-bearing metric of the character plus W. Let R be the
+right-side-bearing metric of the character plus W. The lbearing member is set
+to the minimum L of all characters in the string. The rbearing member is set to
+the maximum R.
+
+For fonts defined with linear indexing rather than 2-byte matrix indexing, each
+`xcb_char2b_t` structure is interpreted as a 16-bit number with byte1 as the
+most significant byte. If the font has no defined default character, undefined
+characters in the string are taken to have all zero metrics.
+
+Characters with all zero metrics are ignored. If the font has no defined
+default_char, the undefined characters in the string are also ignored.
+      ]]></description>
+      <field name="font"><![CDATA[
+The `font` to calculate text extents in. You can also pass a graphics context.
+      ]]></field>
+      <field name="string_len"><![CDATA[
+The number of characters in `string`.
+      ]]></field>
+      <field name="string"><![CDATA[
+The text to get text extents for.
+      ]]></field>
+      <error type="GC"><![CDATA[
+The specified graphics context does not exist.
+      ]]></error>
+      <error type="Font"><![CDATA[
+The specified `font` does not exist.
+      ]]></error>
+    </doc>
   </request>
 
   <struct name="STR">
@@ -2177,6 +2251,25 @@ No font matches the given `name`.
         <fieldref>names_len</fieldref>
       </list>
     </reply>
+    <doc>
+      <brief>get matching font names</brief>
+      <description><![CDATA[
+Gets a list of available font names which match the given `pattern`.
+      ]]></description>
+      <field name="pattern_len"><![CDATA[
+The length (in bytes) of `pattern`.
+      ]]></field>
+      <field name="pattern"><![CDATA[
+A font pattern, for example "-misc-fixed-*".
+
+The asterisk (*) is a wildcard for any number of characters. The question mark
+(?) is a wildcard for a single character. Use of uppercase or lowercase does
+not matter.
+      ]]></field>
+      <field name="max_names"><![CDATA[
+The maximum number of fonts to be returned.
+      ]]></field>
+    </doc>
   </request>
 
   <request name="ListFontsWithInfo" opcode="50">
@@ -3162,6 +3255,29 @@ The specified cursor does not exist.
       <field type="CARD8" name="first_event" />
       <field type="CARD8" name="first_error" />
     </reply>
+    <doc>
+      <brief>check if extension is present</brief>
+      <description><![CDATA[
+Determines if the specified extension is present on this X11 server.
+
+Every extension has a unique `major_opcode` to identify requests, the minor
+opcodes and request formats are extension-specific. If the extension provides
+events and errors, the `first_event` and `first_error` fields in the reply are
+set accordingly.
+
+There should rarely be a need to use this request directly, XCB provides the
+`xcb_get_extension_data` function instead.
+      ]]></description>
+      <field name="name_len"><![CDATA[
+The length of `name` in bytes.
+      ]]></field>
+      <field name="name"><![CDATA[
+The name of the extension to query, for example "RANDR". This is case
+sensitive!
+      ]]></field>
+      <see type="program" name="xdpyinfo" />
+      <see type="function" name="xcb_get_extension_data" />
+    </doc>
   </request>
 
   <request name="ListExtensions" opcode="99">
