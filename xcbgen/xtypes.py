@@ -56,7 +56,7 @@ class Type(object):
         '''
         raise Exception('abstract fixed_size method not overridden!')
 
-    def make_member_of(self, module, complex_type, field_type, field_name, visible, wire, auto):
+    def make_member_of(self, module, complex_type, field_type, field_name, visible, wire, auto, enum=None):
         '''
         Default method for making a data type a member of a structure.
         Extend this if the data type needs to add an additional length field or something.
@@ -65,7 +65,7 @@ class Type(object):
         complex_type is the structure object.
         see Field for the meaning of the other parameters.
         '''
-        new_field = Field(self, field_type, field_name, visible, wire, auto)
+        new_field = Field(self, field_type, field_name, visible, wire, auto, enum)
 
         # We dump the _placeholder_byte if any fields are added.
         for (idx, field) in enumerate(complex_type.fields):
@@ -170,7 +170,7 @@ class ListType(Type):
         self.size = member.size if member.fixed_size() else None
         self.nmemb = self.expr.nmemb if self.expr.fixed_size() else None
 
-    def make_member_of(self, module, complex_type, field_type, field_name, visible, wire, auto):
+    def make_member_of(self, module, complex_type, field_type, field_name, visible, wire, auto, enum=None):
         if not self.fixed_size():
             # We need a length field.
             # Ask our Expression object for it's name, type, and whether it's on the wire.
@@ -189,10 +189,10 @@ class ListType(Type):
             if needlen:
                 type = module.get_type(lenfid)
                 lenfield_type = module.get_type_name(lenfid)
-                type.make_member_of(module, complex_type, lenfield_type, lenfield_name, True, lenwire, False)
+                type.make_member_of(module, complex_type, lenfield_type, lenfield_name, True, lenwire, False, enum)
 
         # Add ourself to the structure by calling our original method.
-        Type.make_member_of(self, module, complex_type, field_type, field_name, visible, wire, auto)
+        Type.make_member_of(self, module, complex_type, field_type, field_name, visible, wire, auto, enum)
 
     def resolve(self, module):
         if self.resolved:
@@ -278,6 +278,7 @@ class ComplexType(Type):
         if self.resolved:
             return
         pads = 0
+        enum = None
 
         # Resolve all of our field datatypes.
         for child in list(self.elt):
@@ -289,6 +290,7 @@ class ComplexType(Type):
                 visible = False
             elif child.tag == 'field':
                 field_name = child.get('name')
+                enum = child.get('enum')
                 fkey = child.get('type')
                 type = module.get_type(fkey)
                 visible = True
@@ -323,7 +325,7 @@ class ComplexType(Type):
             # Get the full type name for the field
             field_type = module.get_type_name(fkey)
             # Add the field to ourself
-            type.make_member_of(module, self, field_type, field_name, visible, True, False)
+            type.make_member_of(module, self, field_type, field_name, visible, True, False, enum)
             # Recursively resolve the type (could be another structure, list)
             type.resolve(module)
 
@@ -413,7 +415,7 @@ class SwitchType(ComplexType):
         self.calc_size() # Figure out how big we are
         self.resolved = True
 
-    def make_member_of(self, module, complex_type, field_type, field_name, visible, wire, auto):
+    def make_member_of(self, module, complex_type, field_type, field_name, visible, wire, auto, enum=None):
         if not self.fixed_size():
             # We need a length field.
             # Ask our Expression object for it's name, type, and whether it's on the wire.
@@ -432,10 +434,10 @@ class SwitchType(ComplexType):
             if needlen:
                 type = module.get_type(lenfid)
                 lenfield_type = module.get_type_name(lenfid)
-                type.make_member_of(module, complex_type, lenfield_type, lenfield_name, True, lenwire, False)
+                type.make_member_of(module, complex_type, lenfield_type, lenfield_name, True, lenwire, False, enum)
 
         # Add ourself to the structure by calling our original method.
-        Type.make_member_of(self, module, complex_type, field_type, field_name, visible, wire, auto)
+        Type.make_member_of(self, module, complex_type, field_type, field_name, visible, wire, auto, enum)
 
     # size for switch can only be calculated at runtime
     def calc_size(self):
@@ -483,7 +485,7 @@ class BitcaseType(ComplexType):
         self.parents = list(parent)
         self.is_bitcase = True
 
-    def make_member_of(self, module, switch_type, field_type, field_name, visible, wire, auto):
+    def make_member_of(self, module, switch_type, field_type, field_name, visible, wire, auto, enum=None):
         '''
         register BitcaseType with the corresponding SwitchType
 
@@ -491,7 +493,7 @@ class BitcaseType(ComplexType):
         complex_type is the structure object.
         see Field for the meaning of the other parameters.
         '''
-        new_field = Field(self, field_type, field_name, visible, wire, auto)
+        new_field = Field(self, field_type, field_name, visible, wire, auto, enum)
 
         # We dump the _placeholder_byte if any bitcases are added.
         for (idx, field) in enumerate(switch_type.bitcases):
