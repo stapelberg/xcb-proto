@@ -123,7 +123,11 @@ class Enum(SimpleType):
         SimpleType.__init__(self, name, 4)
         self.values = []
         self.bits = []
+        self.doc = None
         for item in list(elt):
+            if item.tag == 'doc':
+                self.doc = Doc(name, item)
+
             # First check if we're using a default value
             if len(list(item)) == 0:
                 self.values.append((item.get('name'), ''))
