@@ -543,11 +543,14 @@ class Request(ComplexType):
     def __init__(self, name, elt):
         ComplexType.__init__(self, name, elt)
         self.reply = None
+        self.doc = None
         self.opcode = elt.get('opcode')
 
         for child in list(elt):
             if child.tag == 'reply':
                 self.reply = Reply(name, child)
+            if child.tag == 'doc':
+                self.doc = Doc(name, child)
 
     def resolve(self, module):
         if self.resolved:
@@ -630,5 +633,39 @@ class Error(ComplexType):
         ComplexType.resolve(self, module)
 
     out = __main__.output['error']
+
+
+class Doc(object):
+    '''
+    Class representing a <doc> tag.
+    '''
+    def __init__(self, name, elt):
+        self.name = name
+        self.description = None
+        self.brief = 'BRIEF DESCRIPTION MISSING'
+        self.fields = {}
+        self.errors = {}
+        self.see = {}
+        self.example = None
+	self.needs_headers = []
+
+        for child in list(elt):
+            text = child.text if child.text else ''
+            if child.tag == 'description':
+                self.description = text.strip()
+            if child.tag == 'brief':
+                self.brief = text.strip()
+            if child.tag == 'field':
+                self.fields[child.get('name')] = text.strip()
+            if child.tag == 'error':
+                self.errors[child.get('type')] = text.strip()
+            if child.tag == 'see':
+                self.see[child.get('name')] = child.get('type')
+            if child.tag == 'example':
+                self.example = text.strip()
+            if child.tag == 'needs_header':
+                self.needs_headers.append(child.get('name'))
+
+
 
 _placeholder_byte = Field(PadType(None), tcard8.name, 'pad0', False, True, False)
