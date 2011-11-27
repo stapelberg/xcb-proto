@@ -827,6 +827,81 @@ authorization from the authors.
     <valueparam value-mask-type="CARD32"
                 value-mask-name="value_mask"
                 value-list-name="value_list" />
+    <doc>
+      <brief>Creates a window</brief>
+      <description><![CDATA[
+Creates an unmapped window as child of the specified `parent` window. A
+CreateNotify event will be generated. The new window is placed on top in the
+stacking order with respect to siblings.
+
+The coordinate system has the X axis horizontal and the Y axis vertical with
+the origin [0, 0] at the upper-left corner. Coordinates are integral, in terms
+of pixels, and coincide with pixel centers. Each window and pixmap has its own
+coordinate system. For a window, the origin is inside the border at the inside,
+upper-left corner.
+
+The created window is not yet displayed (mapped), call `xcb_map_window` to
+display it.
+
+The created window will initially use the same cursor as its parent.
+      ]]></description>
+      <field name="wid"><![CDATA[
+The ID with which you will refer to the new window, created by
+`xcb_generate_id`.
+      ]]></field>
+      <field name="depth"><![CDATA[
+Specifies the new window's depth (TODO: what unit?).
+
+The special value `XCB_COPY_FROM_PARENT` means the depth is taken from the
+`parent` window.
+      ]]></field>
+      <field name="visual"><![CDATA[
+Specifies the new window's visual (TODO: what unit?).
+
+The special value `XCB_COPY_FROM_PARENT` means the visual is taken from the
+`parent` window.
+      ]]></field>
+      <field name="class"></field>
+      <field name="parent"><![CDATA[
+The parent window of the new window.
+      ]]></field>
+      <field name="border_width"><![CDATA[
+      TODO:
+
+Must be zero if the `class` is `InputOnly` or a `xcb_match_error_t` occurs.
+      ]]></field>
+      <field name="x"><![CDATA[The X coordinate of the new window.]]></field>
+      <field name="y"><![CDATA[The Y coordinate of the new window.]]></field>
+      <field name="width"><![CDATA[The width of the new window.]]></field>
+      <field name="height"><![CDATA[The height of the new window.]]></field>
+      <error type="Color"><![CDATA[
+TODO: reasons?
+      ]]></error>
+      <error type="Match"><![CDATA[
+TODO: reasons?
+      ]]></error>
+      <error type="Cursor"><![CDATA[
+TODO: reasons?
+      ]]></error>
+      <error type="Pixmap"><![CDATA[
+TODO: reasons?
+      ]]></error>
+      <error type="Value"><![CDATA[
+TODO: reasons?
+      ]]></error>
+      <error type="Window"><![CDATA[
+TODO: reasons?
+      ]]></error>
+      <error type="Alloc"><![CDATA[
+The X server could not allocate the requested resources (no memory?).
+      ]]></error>
+      <see type="function" name="xcb_generate_id" />
+      <see type="request" name="MapWindow" />
+      <see type="event" name="CreateNotify" />
+      <!-- XCB_COPY_FROM_PARENT is defined in xcb.h -->
+      <needs_header name="xcb.h" />
+    </doc>
+
   </request>
 
   <request name="ChangeWindowAttributes" opcode="2">
@@ -864,11 +939,43 @@ authorization from the authors.
       <field type="CARD16" name="do_not_propagate_mask" mask="EventMask" />
       <pad bytes="2" />
     </reply>
+    <doc>
+      <brief>Gets window attributes</brief>
+      <description><![CDATA[
+Gets the current attributes for the specified `window`.
+      ]]></description>
+      <field name="window"><![CDATA[The window to get the attributes from.]]></field>
+      <error type="Window"><![CDATA[
+The specified `window` does not exist.
+      ]]></error>
+      <error type="Drawable"><![CDATA[
+TODO: reasons?
+      ]]></error>
+    </doc>
+
   </request>
 
   <request name="DestroyWindow" opcode="4">
     <pad bytes="1" />
     <field type="WINDOW" name="window" />
+    <doc>
+      <brief>Destroys a window</brief>
+      <description><![CDATA[
+Destroys the specified window and all of its subwindows. A DestroyNotify event
+is generated for each destroyed window (a DestroyNotify event is first generated
+for any given window's inferiors). If the window was mapped, it will be
+automatically unmapped before destroying.
+
+Calling DestroyWindow on the root window will do nothing.
+      ]]></description>
+      <field name="window"><![CDATA[The window to destroy.]]></field>
+      <error type="Window"><![CDATA[
+The specified window does not exist.
+      ]]></error>
+      <see type="event" name="DestroyNotify" />
+      <see type="request" name="MapWindow" />
+      <see type="request" name="UnmapWindow" />
+    </doc>
   </request>
 
   <request name="DestroySubwindows" opcode="5">
@@ -884,6 +991,28 @@ authorization from the authors.
   <request name="ChangeSaveSet" opcode="6">
     <field type="BYTE" name="mode" enum="SetMode" />
     <field type="WINDOW" name="window" />
+    <doc>
+      <brief>Changes a client's save set</brief>
+      <description><![CDATA[
+TODO: explain what the save set is for.
+
+This function either adds or removes the specified window to the client's (your
+application's) save set.
+      ]]></description>
+      <field name="mode"><![CDATA[Insert to add the specified window to the save set or Delete to delete it from the save set.]]></field>
+      <field name="window"><![CDATA[The window to add or delete to/from your save set.]]></field>
+      <error type="Match"><![CDATA[
+You created the specified window. This does not make sense, you can only add
+windows created by other clients to your save set.
+      ]]></error>
+      <error type="Value"><![CDATA[
+You specified an invalid mode.
+      ]]></error>
+      <error type="Window"><![CDATA[
+The specified window does not exist.
+      ]]></error>
+      <see type="request" name="ReparentWindow" />
+    </doc>
   </request>
 
   <request name="ReparentWindow" opcode="7">
@@ -892,11 +1021,78 @@ authorization from the authors.
     <field type="WINDOW" name="parent" />
     <field type="INT16" name="x" />
     <field type="INT16" name="y" />
+    <doc>
+      <brief>Reparents a window</brief>
+      <description><![CDATA[
+Makes the specified window a child of the specified parent window. If the
+window is mapped, it will automatically be unmapped before reparenting and
+re-mapped after reparenting. The window is placed in the stacking order on top
+with respect to sibling windows.
+
+After reparenting, a ReparentNotify event is generated.
+      ]]></description>
+      <field name="window"><![CDATA[The window to reparent.]]></field>
+      <field name="parent"><![CDATA[The new parent of the window.]]></field>
+      <field name="x"><![CDATA[
+The X position of the window within its new parent.
+      ]]></field>
+      <field name="y"><![CDATA[
+The Y position of the window within its new parent.
+      ]]></field>
+      <error type="Match"><![CDATA[
+The new parent window is not on the same screen as the old parent window.
+
+The new parent window is the specified window or an inferior of the specified window.
+
+The new parent is InputOnly and the window is not.
+
+The specified window has a ParentRelative background and the new parent window is not the same depth as the specified window.
+      ]]></error>
+      <error type="Window"><![CDATA[
+The specified window does not exist.
+      ]]></error>
+      <see type="event" name="ReparentNotify" />
+      <see type="request" name="MapWindow" />
+      <see type="request" name="UnmapWindow" />
+    </doc>
   </request>
 
   <request name="MapWindow" opcode="8">
     <pad bytes="1" />
     <field type="WINDOW" name="window" />
+    <doc>
+      <brief>Makes a window visible</brief>
+      <description><![CDATA[
+Maps the specified window. This means making the window visible (as long as its
+parent is visible).
+
+This MapWindow request will be translated to a MapRequest request if a window
+manager is running. The window manager then decides to either map the window or
+not. Set the override-redirect window attribute to true if you want to bypass
+this mechanism.
+
+If the window manager decides to map the window (or if no window manager is
+running), a MapNotify event is generated.
+
+If the window becomes viewable and no earlier contents for it are remembered,
+the X server tiles the window with its background. If the window's background
+is undefined, the existing screen contents are not altered, and the X server
+generates zero or more Expose events.
+
+If the window type is InputOutput, an Expose event will be generated when the
+window becomes visible. The normal response to an Expose event should be to
+repaint the window.
+      ]]></description>
+      <field name="window"><![CDATA[
+The window to make visible.
+]]></field>
+      <error type="Match"><![CDATA[
+The specified window does not exist.
+      ]]></error>
+      <see type="event" name="MapNotify" />
+      <see type="event" name="Expose" />
+      <see type="request" name="UnmapWindow" />
+    </doc>
   </request>
 
   <request name="MapSubwindows" opcode="9">
@@ -907,6 +1103,25 @@ authorization from the authors.
   <request name="UnmapWindow" opcode="10">
     <pad bytes="1" />
     <field type="WINDOW" name="window" />
+    <doc>
+      <brief>Makes a window invisible</brief>
+      <description><![CDATA[
+Unmaps the specified window. This means making the window invisible (and all
+its child windows).
+
+Unmapping a window leads to the `UnmapNotify` event being generated. Also,
+`Expose` events are generated for formerly obscured windows.
+      ]]></description>
+      <field name="window"><![CDATA[
+The window to make invisible.
+]]></field>
+      <error type="Window"><![CDATA[
+The specified window does not exist.
+      ]]></error>
+      <see type="event" name="UnmapNotify" />
+      <see type="event" name="Expose" />
+      <see type="request" name="MapWindow" />
+    </doc>
   </request>
 
   <request name="UnmapSubwindows" opcode="11">
@@ -940,6 +1155,54 @@ authorization from the authors.
     <valueparam value-mask-type="CARD16"
                 value-mask-name="value_mask"
                 value-list-name="value_list" />
+    <doc>
+      <brief>Configures window attributes</brief>
+      <description><![CDATA[
+Configures a window's size, position, border width and stacking order.
+      ]]></description>
+      <example><![CDATA[
+/*
+ * Configures the given window to the left upper corner
+ * with a size of 1024x768 pixels.
+ *
+ */
+void my_example(xcb_connection *c, xcb_window_t window) {
+    uint16_t mask = 0;
+
+    mask |= XCB_CONFIG_WINDOW_X;
+    mask |= XCB_CONFIG_WINDOW_Y;
+    mask |= XCB_CONFIG_WINDOW_WIDTH;
+    mask |= XCB_CONFIG_WINDOW_HEIGHT;
+
+    const uint32_t values[] = {
+        0,    /* x */
+        0,    /* y */
+        1024, /* width */
+        768   /* height */
+    };
+
+    xcb_configure_window(c, window, mask, values);
+    xcb_flush(c);
+}
+      ]]></example>
+      <field name="window"><![CDATA[The window to configure.]]></field>
+      <field name="value_mask"><![CDATA[Bitmask of attributes to change.]]></field>
+      <field name="value_list"><![CDATA[
+New values, corresponding to the attributes in value_mask.
+      ]]></field>
+      <error type="Match"><![CDATA[
+You specified a Sibling without also specifying StackMode or the window is not
+actually a Sibling.
+      ]]></error>
+      <error type="Window"><![CDATA[
+The specified window does not exist. TODO: any other reason?
+      ]]></error>
+      <error type="Value"><![CDATA[
+TODO: reasons?
+      ]]></error>
+      <see type="event" name="MapNotify" />
+      <see type="event" name="Expose" />
+    </doc>
   </request>
 
   <enum name="Circulate">
@@ -950,6 +1213,27 @@ authorization from the authors.
   <request name="CirculateWindow" opcode="13">
     <field type="CARD8" name="direction" enum="Circulate" />
     <field type="WINDOW" name="window" />
+    <doc>
+      <brief>Change window stacking order</brief>
+      <description><![CDATA[
+If `direction` is `XCB_CIRCULATE_RAISE_LOWEST`, the lowest mapped child (if
+any) will be raised to the top of the stack.
+
+If `direction` is `XCB_CIRCULATE_LOWER_HIGHEST`, the highest mapped child will
+be lowered to the bottom of the stack.
+      ]]></description>
+      <!-- The enums are documented, we have nothing to add. -->
+      <field name="direction" />
+      <field name="window"><![CDATA[
+The window to raise/lower (depending on `direction`).
+      ]]></field>
+      <error type="Window"><![CDATA[
+The specified `window` does not exist.
+      ]]></error>
+      <error type="Value"><![CDATA[
+The specified `direction` is invalid.
+      ]]></error>
+    </doc>
   </request>
 
   <request name="GetGeometry" opcode="14">
@@ -965,6 +1249,39 @@ authorization from the authors.
       <field type="CARD16" name="border_width" />
       <pad bytes="2" />
     </reply>
+    <doc>
+      <brief>Get current window geometry</brief>
+      <description><![CDATA[
+Gets the current geometry of the specified drawable (either `Window` or `Pixmap`).
+      ]]></description>
+      <example><![CDATA[
+/*
+ * Displays the x and y position of the given window.
+ *
+ */
+void my_example(xcb_connection *c, xcb_window_t window) {
+    xcb_get_geometry_cookie_t cookie;
+    xcb_get_geometry_reply_t *reply;
+
+    cookie = xcb_get_geometry(c, window);
+    /* ... do other work here if possible ... */
+    if ((reply = xcb_get_geometry_reply(c, cookie, NULL))) {
+        printf("This window is at %d, %d\\n", reply->x, reply->y);
+    }
+    free(reply);
+}
+      ]]></example>
+      <field name="drawable"><![CDATA[
+The drawable (`Window` or `Pixmap`) of which the geometry will be received.
+      ]]></field>
+      <error type="Drawable"><![CDATA[
+TODO: reasons?
+      ]]></error>
+      <error type="Window"><![CDATA[
+TODO: reasons?
+      ]]></error>
+      <see type="program" name="xwininfo" />
+    </doc>
   </request>
 
   <request name="QueryTree" opcode="15">
@@ -993,6 +1310,51 @@ authorization from the authors.
       <pad bytes="1" />
       <field type="ATOM" name="atom" altenum="Atom" />
     </reply>
+    <doc>
+      <brief>Get atom identifier by name</brief>
+      <description><![CDATA[
+Retrieves the identifier (xcb_atom_t TODO) for the atom with the specified
+name. Atoms are used in protocols like EWMH, for example to store window titles
+(`_NET_WM_NAME` atom) as property of a window.
+
+If `only_if_exists` is 0, the atom will be created. If `only_if_exists` is 1,
+you will get an error (TODO).
+      ]]></description>
+      <example><![CDATA[
+/*
+ * Resolves the _NET_WM_NAME atom.
+ *
+ */
+void my_example(xcb_connection *c) {
+    xcb_intern_atom_cookie_t cookie;
+    xcb_intern_atom_reply_t *reply;
+
+    cookie = xcb_intern_atom(c, 0, strlen("_NET_WM_NAME"), "_NET_WM_NAME");
+    /* ... do other work here if possible ... */
+    if ((reply = xcb_intern_atom_reply(c, cookie, NULL))) {
+        printf("The _NET_WM_NAME atom has ID %u\n", reply->atom);
+    }
+    free(reply);
+}
+      ]]></example>
+      <field name="name_len"><![CDATA[
+The length of the following `name`.
+      ]]></field>
+      <field name="name"><![CDATA[
+The name of the atom.
+      ]]></field>
+      <field name="only_if_exists"><![CDATA[
+Create the atom (0) or return an error (1) if the specified atom does not exist already.
+      ]]></field>
+      <error type="Alloc"><![CDATA[
+TODO: reasons?
+      ]]></error>
+      <error type="Value"><![CDATA[
+TODO: reasons?
+      ]]></error>
+      <see type="program" name="xlsatoms" />
+    </doc>
+
   </request>
 
   <request name="GetAtomName" opcode="17">
@@ -1066,6 +1428,87 @@ authorization from the authors.
 	</op>
       </list>
     </reply>
+    <doc>
+      <brief>Gets a window property</brief>
+      <description><![CDATA[
+Gets the specified `property` from the specified `window`. Properties are for
+example the window title (`WM_NAME`) or its minimum size (`WM_NORMAL_HINTS`).
+Protocols such as EWMH also use properties - for example EWMH defines the
+window title, encoded as UTF-8 string, in the `_NET_WM_NAME` property.
+
+TODO: talk about `type`
+
+TODO: talk about `delete`
+
+TODO: talk about the offset/length thing. what's a valid use case?
+      ]]></description>
+      <field name="window"><![CDATA[
+The window whose property you want to get.
+      ]]></field>
+      <field name="_delete"><![CDATA[
+Whether the property should actually be deleted. For deleting a property, the
+specified `type` has to match the actual property type.
+      ]]></field>
+      <field name="property"><![CDATA[
+The property you want to get (an atom).
+      ]]></field>
+      <field name="type"><![CDATA[
+The type of the property you want to get (an atom).
+      ]]></field>
+      <field name="type"><![CDATA[
+The type of the property you want to get (an atom).
+      ]]></field>
+      <field name="long_offset"><![CDATA[
+Specifies the offset (in 32-bit multiples) in the specified property where the
+data is to be retrieved.
+      ]]></field>
+      <field name="long_length"><![CDATA[
+Specifies how many 32-bit multiples of data should be retrieved (e.g. if you
+set `long_length` to 4, you will receive 16 bytes of data).
+      ]]></field>
+      <error type="Window"><![CDATA[
+The specified `window` does not exist.
+      ]]></error>
+      <error type="Atom"><![CDATA[
+`property` or `type` do not refer to a valid atom.
+      ]]></error>
+      <error type="Value"><![CDATA[
+The specified `long_offset` is beyond the actual property length (e.g. the
+property has a length of 3 bytes and you are setting `long_offset` to 1,
+resulting in a byte offset of 4).
+      ]]></error>
+      <see type="request" name="InternAtom" />
+      <see type="program" name="xprop" />
+      <example><![CDATA[
+/*
+ * Prints the WM_NAME property of the window.
+ *
+ */
+void my_example(xcb_connection *c, xcb_window_t window) {
+    xcb_get_property_cookie_t cookie;
+    xcb_get_property_reply_t *reply;
+
+    /* These atoms are predefined in the X11 protocol. */
+    xcb_atom_t property = XCB_ATOM_WM_NAME;
+    xcb_atom_t type = XCB_ATOM_STRING;
+
+    // TODO: a reasonable long_length for WM_NAME?
+    cookie = xcb_get_property(c, 0, window, property, type, 0, 0);
+    if ((reply = xcb_get_property_reply(c, cookie, NULL))) {
+        int len = xcb_get_property_value_length(reply);
+        if (len == 0) {
+            printf("TODO\\n");
+	    free(reply);
+	    return;
+	}
+	printf("WM_NAME is %.*s\\n", len,
+	       (char*)xcb_get_property_value(reply));
+    }
+    free(reply);
+}
+      ]]></example>
+
+    </doc>
   </request>
 
   <request name="ListProperties" opcode="21">
@@ -1086,6 +1529,38 @@ authorization from the authors.
     <field type="WINDOW" name="owner" altenum="Window" />
     <field type="ATOM" name="selection" />
     <field type="TIMESTAMP" name="time" altenum="Time" />
+    <doc>
+      <brief>Sets the owner of a selection</brief>
+      <description><![CDATA[
+Makes `window` the owner of the selection `selection` and updates the
+last-change time of the specified selection.
+
+TODO: briefly explain what a selection is.
+      ]]></description>
+      <field name="selection"><![CDATA[
+The selection.
+      ]]></field>
+      <field name="owner"><![CDATA[
+The new owner of the selection.
+
+The special value `XCB_NONE` means that the selection will have no owner.
+      ]]></field>
+      <field name="time"><![CDATA[
+Timestamp to avoid race conditions when running X over the network.
+
+The selection will not be changed if `time` is earlier than the current
+last-change time of the `selection` or is later than the current X server time.
+Otherwise, the last-change time is set to the specified time.
+
+The special value `XCB_CURRENT_TIME` will be replaced with the current server
+time.
+      ]]></field>
+      <error type="Atom"><![CDATA[
+`selection` does not refer to a valid atom.
+      ]]></error>
+      <see type="request" name="SetSelectionOwner" />
+    </doc>
+
   </request>
 
   <request name="GetSelectionOwner" opcode="23">
@@ -1095,6 +1570,21 @@ authorization from the authors.
       <pad bytes="1" />
       <field type="WINDOW" name="owner" altenum="Window" />
     </reply>
+    <doc>
+      <brief>Gets the owner of a selection</brief>
+      <description><![CDATA[
+Gets the owner of the specified selection.
+
+TODO: briefly explain what a selection is.
+      ]]></description>
+      <field name="selection"><![CDATA[
+The selection.
+      ]]></field>
+      <error type="Atom"><![CDATA[
+`selection` does not refer to a valid atom.
+      ]]></error>
+      <see type="request" name="SetSelectionOwner" />
+    </doc>
   </request>
 
   <request name="ConvertSelection" opcode="24">
@@ -1116,6 +1606,82 @@ authorization from the authors.
     <field type="WINDOW" name="destination" altenum="SendEventDest" />
     <field type="CARD32" name="event_mask" mask="EventMask" />
     <list type="char" name="event"><value>32</value></list>
+    <doc>
+      <brief>send an event</brief>
+      <description><![CDATA[
+Identifies the `destination` window, determines which clients should receive
+the specified event and ignores any active grabs.
+
+The `event` must be one of the core events or an event defined by an extension,
+so that the X server can correctly byte-swap the contents as necessary. The
+contents of `event` are otherwise unaltered and unchecked except for the
+`send_event` field which is forced to 'true'.
+      ]]></description>
+      <field name="destination"><![CDATA[
+The window to send this event to. Every client which selects any event within
+`event_mask` on `destination` will get the event.
+
+The special value `XCB_SEND_EVENT_DEST_POINTER_WINDOW` refers to the window
+that contains the mouse pointer.
+
+The special value `XCB_SEND_EVENT_DEST_ITEM_FOCUS` refers to the window which
+has the keyboard focus.
+      ]]></field>
+      <field name="event_mask"><![CDATA[
+Event_mask for determining which clients should receive the specified event.
+See `destination` and `propagate`.
+      ]]></field>
+      <field name="propagate"><![CDATA[
+If `propagate` is true and no clients have selected any event on `destination`,
+the destination is replaced with the closest ancestor of `destination` for
+which some client has selected a type in `event_mask` and for which no
+intervening window has that type in its do-not-propagate-mask. If no such
+window exists or if the window is an ancestor of the focus window and
+`InputFocus` was originally specified as the destination, the event is not sent
+to any clients. Otherwise, the event is reported to every client selecting on
+the final destination any of the types specified in `event_mask`.
+      ]]></field>
+      <field name="event"><![CDATA[
+The event to send to the specified `destination`.
+      ]]></field>
+      <error type="Window"><![CDATA[
+The specified `destination` window does not exist.
+      ]]></error>
+      <error type="Value"><![CDATA[
+The given `event` is neither a core event nor an event defined by an extension.
+      ]]></error>
+      <example><![CDATA[
+/*
+ * Tell the given window that it was configured to a size of 800x600 pixels.
+ *
+ */
+void my_example(xcb_connection_t *conn, xcb_window_t window) {
+    /* Every X11 event is 32 bytes long. Therefore, XCB will copy 32 bytes.
+     * In order to properly initialize these bytes, we allocate 32 bytes even
+     * though we only need less for an xcb_configure_notify_event_t */
+    xcb_configure_notify_event_t *event = calloc(32, 1);
+
+    event->event = window;
+    event->window = window;
+    event->response_type = XCB_CONFIGURE_NOTIFY;
+
+    event->x = 0;
+    event->y = 0;
+    event->width = 800;
+    event->height = 600;
+
+    event->border_width = 0;
+    event->above_sibling = XCB_NONE;
+    event->override_redirect = false;
+
+    xcb_send_event(conn, false, window, XCB_EVENT_MASK_STRUCTURE_NOTIFY,
+                   (char*)event);
+    xcb_flush(conn);
+    free(event);
+}
+      ]]></example>
+      <see type="event" name="ConfigureNotify" />
+    </doc>
   </request>
 
   <enum name="GrabMode">
@@ -1152,6 +1718,32 @@ authorization from the authors.
   <request name="UngrabPointer" opcode="27">
     <pad bytes="1" />
     <field type="TIMESTAMP" name="time" altenum="Time" />
+    <doc>
+      <brief>release the pointer</brief>
+      <description><![CDATA[
+Releases the pointer and any queued events if you actively grabbed the pointer
+before using `xcb_grab_pointer`, `xcb_grab_button` or within a normal button
+press.
+
+EnterNotify and LeaveNotify events are generated.
+      ]]></description>
+      <field name="time"><![CDATA[
+Timestamp to avoid race conditions when running X over the network.
+
+The pointer will not be released if `time` is earlier than the
+last-pointer-grab time or later than the current X server time.
+      ]]></field>
+      <field name="name_len"><![CDATA[
+Length (in bytes) of `name`.
+      ]]></field>
+      <field name="name"><![CDATA[
+A pattern describing an X core font.
+      ]]></field>
+      <see type="request" name="GrabPointer" />
+      <see type="request" name="GrabButton" />
+      <see type="event" name="EnterNotify" />
+      <see type="event" name="LeaveNotify" />
+    </doc>
   </request>
 
   <enum name="ButtonIndex">
@@ -1228,6 +1820,35 @@ authorization from the authors.
     <field type="WINDOW" name="grab_window" />
     <field type="CARD16" name="modifiers" mask="ModMask" />
     <pad bytes="2" />
+    <doc>
+      <brief>release a key combination</brief>
+      <description><![CDATA[
+Releases the key combination on `grab_window` if you grabbed it using
+`xcb_grab_key` before.
+      ]]></description>
+      <field name="key"><![CDATA[
+The keycode of the specified key combination.
+
+Using the special value `XCB_GRAB_ANY` means releasing all possible key codes.
+      ]]></field>
+      <field name="grab_window"><![CDATA[
+The window on which the grabbed key combination will be released.
+      ]]></field>
+      <field name="modifiers"><![CDATA[
+The modifiers of the specified key combination.
+
+Using the special value `XCB_MOD_MASK_ANY` means releasing the key combination
+with every possible modifier combination.
+      ]]></field>
+      <error type="Window"><![CDATA[
+The specified `grab_window` does not exist.
+      ]]></error>
+      <error type="Value"><![CDATA[
+TODO: reasons?
+      ]]></error>
+      <see type="request" name="GrabKey" />
+      <see type="program" name="xev" />
+    </doc>
   </request>
 
   <enum name="Allow">
@@ -1264,6 +1885,20 @@ authorization from the authors.
       <field type="CARD16" name="mask" mask="KeyButMask" />
       <pad bytes="2" />
     </reply>
+    <doc>
+      <brief>get pointer coordinates</brief>
+      <description><![CDATA[
+Gets the root window the pointer is logically on and the pointer coordinates
+relative to the root window's origin.
+      ]]></description>
+      <field name="window"><![CDATA[
+A window to check if the pointer is on the same screen as `window` (see the
+`same_screen` field in the reply).
+      ]]></field>
+      <error type="Window"><![CDATA[
+The specified `window` does not exist.
+      ]]></error>
+    </doc>
   </request>
 
   <struct name="TIMECOORD">
@@ -1311,6 +1946,38 @@ authorization from the authors.
     <field type="CARD16" name="src_height" />
     <field type="INT16" name="dst_x" />
     <field type="INT16" name="dst_y" />
+    <doc>
+      <brief>move mouse pointer</brief>
+      <description><![CDATA[
+Moves the mouse pointer to the specified position.
+
+If `src_window` is not `XCB_NONE` (TODO), the move will only take place if the
+pointer is inside `src_window` and within the rectangle specified by (`src_x`,
+`src_y`, `src_width`, `src_height`). The rectangle coordinates are relative to
+`src_window`.
+
+If `dst_window` is not `XCB_NONE` (TODO), the pointer will be moved to the
+offsets (`dst_x`, `dst_y`) relative to `dst_window`. If `dst_window` is
+`XCB_NONE` (TODO), the pointer will be moved by the offsets (`dst_x`, `dst_y`)
+relative to the current position of the pointer.
+      ]]></description>
+      <field name="src_window"><![CDATA[
+If `src_window` is not `XCB_NONE` (TODO), the move will only take place if the
+pointer is inside `src_window` and within the rectangle specified by (`src_x`,
+`src_y`, `src_width`, `src_height`). The rectangle coordinates are relative to
+`src_window`.
+      ]]></field>
+      <field name="dst_window"><![CDATA[
+If `dst_window` is not `XCB_NONE` (TODO), the pointer will be moved to the
+offsets (`dst_x`, `dst_y`) relative to `dst_window`. If `dst_window` is
+`XCB_NONE` (TODO), the pointer will be moved by the offsets (`dst_x`, `dst_y`)
+relative to the current position of the pointer.
+      ]]></field>
+      <error type="Window"><![CDATA[
+TODO: reasons?
+      ]]></error>
+      <see type="request" name="SetInputFocus" />
+    </doc>
   </request>
 
   <!-- used for revert_to and focus -->
@@ -1325,6 +1992,50 @@ authorization from the authors.
     <field type="CARD8" name="revert_to" enum="InputFocus" />
     <field type="WINDOW" name="focus" altenum="InputFocus" />
     <field type="TIMESTAMP" name="time" altenum="Time" />
+    <doc>
+      <brief>Sets input focus</brief>
+      <description><![CDATA[
+Changes the input focus and the last-focus-change time. If the specified `time`
+is earlier than the current last-focus-change time, the request is ignored (to
+avoid race conditions when running X over the network).
+
+A FocusIn and FocusOut event is generated when focus is changed.
+      ]]></description>
+      <field name="focus"><![CDATA[
+The window to focus. All keyboard events will be reported to this window. The
+window must be viewable (TODO), or a `xcb_match_error_t` occurs (TODO).
+
+If `focus` is `XCB_NONE` (TODO), all keyboard events are
+discarded until a new focus window is set.
+
+If `focus` is `XCB_POINTER_ROOT` (TODO), focus is on the root window of the
+screen on which the pointer is on currently.
+      ]]></field>
+      <field name="revert_to"><![CDATA[
+Specifies what happens when the `focus` window becomes unviewable (if `focus`
+is neither `XCB_NONE` nor `XCB_POINTER_ROOT`):
+
+If `revert_to` is `XCB_REVERT_TO_PARENT`, the focus reverts to the parent (or
+closest viewable ancestor) and the new revert_to value is `XCB_REVERT_TO_NONE`.
+
+If `revert_to` is `XCB_REVERT_TO_POINTER_ROOT` or `XCB_REVERT_TO_NONE`, the
+focus reverts to `XCB_POINTER_ROOT` or `XCB_NONE`, respectively. When the focus
+reverts, FocusIn and FocusOut events are generated, but the last-focus-change
+time is not changed.
+      ]]></field>
+      <error type="Window"><![CDATA[
+The specified `focus` window does not exist.
+      ]]></error>
+      <error type="Match"><![CDATA[
+The specified `focus` window is not viewable.
+      ]]></error>
+      <error type="Value"><![CDATA[
+TODO: Reasons?
+      ]]></error>
+      <see type="event" name="FocusIn" />
+      <see type="event" name="FocusOut" />
+    </doc>
+
   </request>
 
   <request name="GetInputFocus" opcode="43">
@@ -1349,6 +2060,28 @@ authorization from the authors.
     <list type="char" name="name">
       <fieldref>name_len</fieldref>
     </list>
+    <doc>
+      <brief>opens a font</brief>
+      <description><![CDATA[
+Opens any X core font matching the given `name` (for example "-misc-fixed-*").
+
+Note that X core fonts are deprecated (but still supported) in favor of
+client-side rendering using Xft.
+      ]]></description>
+      <field name="fid"><![CDATA[
+The ID with which you will refer to the font, created by `xcb_generate_id`.
+      ]]></field>
+      <field name="name_len"><![CDATA[
+Length (in bytes) of `name`.
+      ]]></field>
+      <field name="name"><![CDATA[
+A pattern describing an X core font.
+      ]]></field>
+      <error type="Name"><![CDATA[
+No font matches the given `name`.
+      ]]></error>
+      <see type="function" name="xcb_generate_id" />
+    </doc>
   </request>
 
   <request name="CloseFont" opcode="46">
@@ -1502,11 +2235,55 @@ authorization from the authors.
     <field type="DRAWABLE" name="drawable" />
     <field type="CARD16" name="width" />
     <field type="CARD16" name="height" />
+    <doc>
+      <brief>Creates a pixmap</brief>
+      <description><![CDATA[
+Creates a pixmap. The pixmap can only be used on the same screen as `drawable`
+is on and only with drawables of the same `depth`.
+      ]]></description>
+      <field name="depth"><![CDATA[
+TODO
+      ]]></field>
+      <field name="pid"><![CDATA[
+The ID with which you will refer to the new pixmap, created by
+`xcb_generate_id`.
+      ]]></field>
+      <field name="drawable"><![CDATA[
+Drawable to get the screen from.
+      ]]></field>
+      <field name="width"><![CDATA[
+The width of the new pixmap.
+      ]]></field>
+      <field name="height"><![CDATA[
+The height of the new pixmap.
+      ]]></field>
+      <error type="Value"><![CDATA[
+TODO: reasons?
+      ]]></error>
+      <error type="Drawable"><![CDATA[
+The specified `drawable` (Window or Pixmap) does not exist.
+      ]]></error>
+      <error type="Alloc"><![CDATA[
+The X server could not allocate the requested resources (no memory?).
+      ]]></error>
+      <see type="function" name="xcb_generate_id" />
+    </doc>
   </request>
 
   <request name="FreePixmap" opcode="54">
     <pad bytes="1" />
     <field type="PIXMAP" name="pixmap" />
+    <doc>
+      <brief>Destroys a pixmap</brief>
+      <description><![CDATA[
+Deletes the association between the pixmap ID and the pixmap. The pixmap
+storage will be freed when there are no more references to it.
+      ]]></description>
+      <field name="pixmap"><![CDATA[The pixmap to destroy.]]></field>
+      <error type="Pixmap"><![CDATA[
+The specified pixmap does not exist.
+      ]]></error>
+    </doc>
   </request>
   
   <enum name="GC">
@@ -1603,6 +2380,39 @@ authorization from the authors.
     <valueparam value-mask-type="CARD32"
                 value-mask-name="value_mask"
                 value-list-name="value_list" />
+    <doc>
+      <brief>Creates a graphics context</brief>
+      <description><![CDATA[
+Creates a graphics context. The graphics context can be used with any drawable
+that has the same root and depth as the specified drawable.
+      ]]></description>
+      <field name="cid"><![CDATA[
+The ID with which you will refer to the graphics context, created by
+`xcb_generate_id`.
+      ]]></field>
+      <field name="drawable"><![CDATA[
+Drawable to get the root/depth from.
+      ]]></field>
+      <error type="Drawable"><![CDATA[
+The specified `drawable` (Window or Pixmap) does not exist.
+      ]]></error>
+      <error type="Match"><![CDATA[
+TODO: reasons?
+      ]]></error>
+      <error type="Font"><![CDATA[
+TODO: reasons?
+      ]]></error>
+      <error type="Pixmap"><![CDATA[
+TODO: reasons?
+      ]]></error>
+      <error type="Value"><![CDATA[
+TODO: reasons?
+      ]]></error>
+      <error type="Alloc"><![CDATA[
+The X server could not allocate the requested resources (no memory?).
+      ]]></error>
+      <see type="function" name="xcb_generate_id" />
+    </doc>
   </request>
 
   <request name="ChangeGC" opcode="56">
@@ -1648,6 +2458,16 @@ authorization from the authors.
   <request name="FreeGC" opcode="60">
     <pad bytes="1" />
     <field type="GCONTEXT" name="gc" />
+    <doc>
+      <brief>Destroys a graphics context</brief>
+      <description><![CDATA[
+Destroys the specified `gc` and all associated storage.
+      ]]></description>
+      <field name="gc"><![CDATA[The graphics context to destroy.]]></field>
+      <error type="GC"><![CDATA[
+The specified graphics context does not exist.
+      ]]></error>
+    </doc>
   </request>
 
   <request name="ClearArea" opcode="61">
@@ -1718,6 +2538,43 @@ authorization from the authors.
     <field type="DRAWABLE" name="drawable" />
     <field type="GCONTEXT" name="gc" />
     <list type="SEGMENT" name="segments" />
+    <doc>
+      <brief>draw lines</brief>
+      <description><![CDATA[
+Draws multiple, unconnected lines. For each segment, a line is drawn between
+(x1, y1) and (x2, y2). The lines are drawn in the order listed in the array of
+`xcb_segment_t` structures and does not perform joining at coincident
+endpoints. For any given line, a pixel is not drawn more than once. If lines
+intersect, the intersecting pixels are drawn multiple times.
+
+TODO: include the xcb_segment_t data structure
+
+TODO: an example
+      ]]></description>
+      <field name="drawable"><![CDATA[
+A drawable (Window or Pixmap) to draw on.
+      ]]></field>
+      <field name="gc"><![CDATA[
+The graphics context to use.
+
+TODO: document which attributes of a gc are used
+      ]]></field>
+      <field name="segments_len"><![CDATA[
+The number of `xcb_segment_t` structures in `segments`.
+      ]]></field>
+      <field name="segments"><![CDATA[
+An array of `xcb_segment_t` structures.
+      ]]></field>
+      <error type="Drawable"><![CDATA[
+The specified `drawable` does not exist.
+      ]]></error>
+      <error type="GC"><![CDATA[
+The specified `gc` does not exist.
+      ]]></error>
+      <error type="Match"><![CDATA[
+TODO: reasons?
+      ]]></error>
+    </doc>
   </request>
 
   <request name="PolyRectangle" opcode="67" combine-adjacent="true">
@@ -1760,6 +2617,42 @@ authorization from the authors.
     <field type="DRAWABLE" name="drawable" />
     <field type="GCONTEXT" name="gc" />
     <list type="RECTANGLE" name="rectangles" />
+    <doc>
+      <brief>Fills rectangles</brief>
+      <description><![CDATA[
+Fills the specified rectangle(s) in the order listed in the array. For any
+given rectangle, each pixel is not drawn more than once. If rectangles
+intersect, the intersecting pixels are drawn multiple times.
+      ]]></description>
+      <field name="drawable"><![CDATA[
+The drawable (Window or Pixmap) to draw on.
+      ]]></field>
+      <field name="gc"><![CDATA[
+The graphics context to use.
+
+The following graphics context components are used: function, plane-mask,
+fill-style, subwindow-mode, clip-x-origin, clip-y-origin, and clip-mask.
+
+The following graphics context mode-dependent components are used:
+foreground, background, tile, stipple, tile-stipple-x-origin, and
+tile-stipple-y-origin.
+      ]]></field>
+      <field name="rectangles_len"><![CDATA[
+The number of `xcb_rectangle_t` structures in `rectangles`.
+      ]]></field>
+      <field name="rectangles"><![CDATA[
+The rectangles to fill.
+      ]]></field>
+      <error type="Drawable"><![CDATA[
+The specified `drawable` (Window or Pixmap) does not exist.
+      ]]></error>
+      <error type="GC"><![CDATA[
+The specified graphics context does not exist.
+      ]]></error>
+      <error type="Match"><![CDATA[
+TODO: reasons?
+      ]]></error>
+    </doc>
   </request>
 
   <request name="PolyFillArc" opcode="71" combine-adjacent="true">
@@ -1838,6 +2731,52 @@ authorization from the authors.
     <list type="char" name="string">
       <fieldref>string_len</fieldref>
     </list>
+    <doc>
+      <brief>Draws text</brief>
+      <description><![CDATA[
+Fills the destination rectangle with the background pixel from `gc`, then
+paints the text with the foreground pixel from `gc`. The upper-left corner of
+the filled rectangle is at [x, y - font-ascent]. The width is overall-width,
+the height is font-ascent + font-descent. The overall-width, font-ascent and
+font-descent are as returned by `xcb_query_text_extents` (TODO).
+
+Note that using X core fonts is deprecated (but still supported) in favor of
+client-side rendering using Xft.
+      ]]></description>
+      <field name="drawable"><![CDATA[
+The drawable (Window or Pixmap) to draw text on.
+      ]]></field>
+      <field name="string_len"><![CDATA[
+The length of the `string`. Note that this parameter limited by 255 due to
+using 8 bits!
+      ]]></field>
+      <field name="string"><![CDATA[
+The string to draw. Only the first 255 characters are relevant due to the data
+type of `string_len`.
+      ]]></field>
+      <field name="x"><![CDATA[
+The x coordinate of the first character, relative to the origin of `drawable`.
+      ]]></field>
+      <field name="y"><![CDATA[
+The y coordinate of the first character, relative to the origin of `drawable`.
+      ]]></field>
+      <field name="gc"><![CDATA[
+The graphics context to use.
+
+The following graphics context components are used: plane-mask, foreground,
+background, font, subwindow-mode, clip-x-origin, clip-y-origin, and clip-mask.
+      ]]></field>
+      <error type="Drawable"><![CDATA[
+The specified `drawable` (Window or Pixmap) does not exist.
+      ]]></error>
+      <error type="GC"><![CDATA[
+The specified graphics context does not exist.
+      ]]></error>
+      <error type="Match"><![CDATA[
+TODO: reasons?
+      ]]></error>
+      <see type="request" name="ImageText16" />
+    </doc>
   </request>
 
   <request name="ImageText16" opcode="77">
@@ -1849,6 +2788,53 @@ authorization from the authors.
     <list type="CHAR2B" name="string">
       <fieldref>string_len</fieldref>
     </list>
+    <doc>
+      <brief>Draws text</brief>
+      <description><![CDATA[
+Fills the destination rectangle with the background pixel from `gc`, then
+paints the text with the foreground pixel from `gc`. The upper-left corner of
+the filled rectangle is at [x, y - font-ascent]. The width is overall-width,
+the height is font-ascent + font-descent. The overall-width, font-ascent and
+font-descent are as returned by `xcb_query_text_extents` (TODO).
+
+Note that using X core fonts is deprecated (but still supported) in favor of
+client-side rendering using Xft.
+      ]]></description>
+      <field name="drawable"><![CDATA[
+The drawable (Window or Pixmap) to draw text on.
+      ]]></field>
+      <field name="string_len"><![CDATA[
+The length of the `string` in characters. Note that this parameter limited by
+255 due to using 8 bits!
+      ]]></field>
+      <field name="string"><![CDATA[
+The string to draw. Only the first 255 characters are relevant due to the data
+type of `string_len`. Every character uses 2 bytes (hence the 16 in this
+request's name).
+      ]]></field>
+      <field name="x"><![CDATA[
+The x coordinate of the first character, relative to the origin of `drawable`.
+      ]]></field>
+      <field name="y"><![CDATA[
+The y coordinate of the first character, relative to the origin of `drawable`.
+      ]]></field>
+      <field name="gc"><![CDATA[
+The graphics context to use.
+
+The following graphics context components are used: plane-mask, foreground,
+background, font, subwindow-mode, clip-x-origin, clip-y-origin, and clip-mask.
+      ]]></field>
+      <error type="Drawable"><![CDATA[
+The specified `drawable` (Window or Pixmap) does not exist.
+      ]]></error>
+      <error type="GC"><![CDATA[
+The specified graphics context does not exist.
+      ]]></error>
+      <error type="Match"><![CDATA[
+TODO: reasons?
+      ]]></error>
+      <see type="request" name="ImageText8" />
+    </doc>
   </request>
 
   <enum name= "ColormapAlloc">
@@ -1912,6 +2898,31 @@ authorization from the authors.
       <pad bytes="2" />
       <field type="CARD32" name="pixel" />
     </reply>
+    <doc>
+      <brief>Allocate a color</brief>
+      <description><![CDATA[
+Allocates a read-only colormap entry corresponding to the closest RGB value
+supported by the hardware. If you are using TrueColor, you can take a shortcut
+and directly calculate the color pixel value to avoid the round trip. But, for
+example, on 16-bit color setups (VNC), you can easily get the closest supported
+RGB value to the RGB value you are specifying.
+      ]]></description>
+      <field name="cmap"><![CDATA[
+TODO
+      ]]></field>
+      <field name="red"><![CDATA[
+The red value of your color.
+      ]]></field>
+      <field name="green"><![CDATA[
+The green value of your color.
+      ]]></field>
+      <field name="blue"><![CDATA[
+The blue value of your color.
+      ]]></field>
+      <error type="Color"><![CDATA[
+The specified colormap `cmap` does not exist.
+      ]]></error>
+    </doc>
   </request>
 
   <request name="AllocNamedColor" opcode="85">
@@ -2094,6 +3105,18 @@ authorization from the authors.
   <request name="FreeCursor" opcode="95">
     <pad bytes="1" />
     <field type="CURSOR" name="cursor" />
+    <doc>
+      <brief>Deletes a cursor</brief>
+      <description><![CDATA[
+Deletes the association between the cursor resource ID and the specified
+cursor. The cursor is freed when no other resource references it.
+      ]]></description>
+      <field name="cursor"><![CDATA[The cursor to destroy.]]></field>
+      <error type="Cursor"><![CDATA[
+The specified cursor does not exist.
+      ]]></error>
+    </doc>
+
   </request>
 
   <request name="RecolorCursor" opcode="96">
@@ -2346,6 +3369,24 @@ authorization from the authors.
   <request name="KillClient" opcode="113">
     <pad bytes="1" />
     <field type="CARD32" name="resource" altenum="Kill" />
+    <doc>
+      <brief>kills a client</brief>
+      <description><![CDATA[
+Forces a close down of the client that created the specified `resource`.
+      ]]></description>
+      <field name="resource"><![CDATA[
+Any resource belonging to the client (for example a Window), used to identify
+the client connection.
+
+The special value of `XCB_KILL_ALL_TEMPORARY`, the resources of all clients
+that have terminated in `RetainTemporary` (TODO) are destroyed.
+      ]]></field>
+      <error type="Value"><![CDATA[
+The specified `resource` does not exist.
+      ]]></error>
+      <see type="program" name="xkill" />
+    </doc>
+
   </request>
 
   <request name="RotateProperties" opcode="114">
