@@ -2809,6 +2809,16 @@ No font matches the given `name`.
         <fieldref>char_infos_len</fieldref>
       </list>
     </reply>
+    <doc>
+      <brief>query font metrics</brief>
+      <description><![CDATA[
+Queries information associated with the font.
+      ]]></description>
+      <field name="font"><![CDATA[
+The fontable (Font or Graphics Context) to query.
+      ]]></field>
+      <!-- TODO: example -->
+    </doc>
   </request>
 
   <request name="QueryTextExtents" opcode="48">
@@ -2944,6 +2954,26 @@ The maximum number of fonts to be returned.
         <fieldref>name_len</fieldref>
       </list>
     </reply>
+    <doc>
+      <brief>get matching font names and information</brief>
+      <description><![CDATA[
+Gets a list of available font names which match the given `pattern`.
+      ]]></description>
+      <field name="pattern_len"><![CDATA[
+The length (in bytes) of `pattern`.
+      ]]></field>
+      <field name="pattern"><![CDATA[
+A font pattern, for example "-misc-fixed-*".
+
+The asterisk (*) is a wildcard for any number of characters. The question mark
+(?) is a wildcard for a single character. Use of uppercase or lowercase does
+not matter.
+      ]]></field>
+      <field name="max_names"><![CDATA[
+The maximum number of fonts to be returned.
+      ]]></field>
+    </doc>
+
   </request>
 
   <request name="SetFontPath" opcode="51">
@@ -3425,6 +3455,48 @@ The specified graphics context does not exist.
     <field type="INT16" name="dst_y" />
     <field type="CARD16" name="width" />
     <field type="CARD16" name="height" />
+    <doc>
+      <brief>copy areas</brief>
+      <description><![CDATA[
+Copies the specified rectangle from `src_drawable` to `dst_drawable`.
+      ]]></description>
+      <field name="dst_drawable"><![CDATA[
+The destination drawable (Window or Pixmap).
+      ]]></field>
+      <field name="src_drawable"><![CDATA[
+The source drawable (Window or Pixmap).
+      ]]></field>
+      <field name="gc"><![CDATA[
+The graphics context to use.
+      ]]></field>
+      <field name="src_x"><![CDATA[
+The source X coordinate.
+      ]]></field>
+      <field name="src_y"><![CDATA[
+The source Y coordinate.
+      ]]></field>
+      <field name="dst_x"><![CDATA[
+The destination X coordinate.
+      ]]></field>
+      <field name="dst_y"><![CDATA[
+The destination Y coordinate.
+      ]]></field>
+      <field name="width"><![CDATA[
+The width of the area to copy (in pixels).
+      ]]></field>
+      <field name="height"><![CDATA[
+The height of the area to copy (in pixels).
+      ]]></field>
+      <error type="Drawable"><![CDATA[
+The specified `drawable` (Window or Pixmap) does not exist.
+      ]]></error>
+      <error type="GC"><![CDATA[
+The specified graphics context does not exist.
+      ]]></error>
+      <error type="Match"><![CDATA[
+`src_drawable` has a different root or depth than `dst_drawable`.
+      ]]></error>
+    </doc>
   </request>
 
   <request name="CopyPlane" opcode="63">
@@ -4093,6 +4165,65 @@ The specified colormap `cmap` does not exist.
     <field type="CARD16" name="back_red" />
     <field type="CARD16" name="back_green" />
     <field type="CARD16" name="back_blue" />
+    <doc>
+      <brief>create cursor</brief>
+      <description><![CDATA[
+Creates a cursor from a font glyph. X provides a set of standard cursor shapes
+in a special font named cursor. Applications are encouraged to use this
+interface for their cursors because the font can be customized for the
+individual display type.
+
+All pixels which are set to 1 in the source will use the foreground color (as
+specified by `fore_red`, `fore_green` and `fore_blue`). All pixels set to 0
+will use the background color (as specified by `back_red`, `back_green` and
+`back_blue`).
+      ]]></description>
+      <field name="cid"><![CDATA[
+The ID with which you will refer to the cursor, created by `xcb_generate_id`.
+      ]]></field>
+      <field name="source_font"><![CDATA[
+In which font to look for the cursor glyph.
+      ]]></field>
+      <field name="mask_font"><![CDATA[
+In which font to look for the mask glyph.
+      ]]></field>
+      <field name="source_char"><![CDATA[
+The glyph of `source_font` to use.
+      ]]></field>
+      <field name="mask_char"><![CDATA[
+The glyph of `mask_font` to use as a mask: Pixels which are set to 1 define
+which source pixels are displayed. All pixels which are set to 0 are not
+displayed.
+      ]]></field>
+      <field name="fore_red"><![CDATA[
+The red value of the foreground color.
+      ]]></field>
+      <field name="fore_green"><![CDATA[
+The green value of the foreground color.
+      ]]></field>
+      <field name="fore_blue"><![CDATA[
+The blue value of the foreground color.
+      ]]></field>
+      <field name="back_red"><![CDATA[
+The red value of the background color.
+      ]]></field>
+      <field name="back_green"><![CDATA[
+The green value of the background color.
+      ]]></field>
+      <field name="back_blue"><![CDATA[
+The blue value of the background color.
+      ]]></field>
+      <error type="Alloc"><![CDATA[
+The X server could not allocate the requested resources (no memory?).
+      ]]></error>
+      <error type="Font"><![CDATA[
+The specified `source_font` or `mask_font` does not exist.
+      ]]></error>
+      <error type="Value"><![CDATA[
+Either `source_char` or `mask_char` are not defined in `source_font` or `mask_font`, respectively.
+      ]]></error>
+      <!-- TODO: example -->
+    </doc>
   </request>
 
   <request name="FreeCursor" opcode="95">
