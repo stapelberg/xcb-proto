@@ -2660,6 +2660,23 @@ TODO: reasons?
     <item name="PointerRoot"><value>1</value></item>
     <item name="Parent">     <value>2</value></item>  <!-- revert_to only -->
     <item name="FollowKeyboard"><value>3</value></item>  <!-- xinput extension only -->
+    <doc>
+      <field name="None"><![CDATA[
+The focus reverts to `XCB_NONE`, so no window will have the input focus.
+      ]]></field>
+      <field name="PointerRoot"><![CDATA[
+The focus reverts to `XCB_POINTER_ROOT` respectively. When the focus reverts,
+FocusIn and FocusOut events are generated, but the last-focus-change time is
+not changed.
+      ]]></field>
+      <field name="Parent"><![CDATA[
+The focus reverts to the parent (or closest viewable ancestor) and the new
+revert_to value is `XCB_INPUT_FOCUS_NONE`.
+      ]]></field>
+      <field name="FollowKeyboard"><![CDATA[
+NOT YET DOCUMENTED. Only relevant for the xinput extension.
+      ]]></field>
+    </doc>
   </enum>
 
   <request name="SetInputFocus" opcode="42">
@@ -2685,17 +2702,15 @@ discarded until a new focus window is set.
 If `focus` is `XCB_POINTER_ROOT` (TODO), focus is on the root window of the
 screen on which the pointer is on currently.
       ]]></field>
+      <field name="time"><![CDATA[
+Timestamp to avoid race conditions when running X over the network.
+
+The special value `XCB_CURRENT_TIME` will be replaced with the current server
+time.
+      ]]></field>
       <field name="revert_to"><![CDATA[
 Specifies what happens when the `focus` window becomes unviewable (if `focus`
-is neither `XCB_NONE` nor `XCB_POINTER_ROOT`):
-
-If `revert_to` is `XCB_REVERT_TO_PARENT`, the focus reverts to the parent (or
-closest viewable ancestor) and the new revert_to value is `XCB_REVERT_TO_NONE`.
-
-If `revert_to` is `XCB_REVERT_TO_POINTER_ROOT` or `XCB_REVERT_TO_NONE`, the
-focus reverts to `XCB_POINTER_ROOT` or `XCB_NONE`, respectively. When the focus
-reverts, FocusIn and FocusOut events are generated, but the last-focus-change
-time is not changed.
+is neither `XCB_NONE` nor `XCB_POINTER_ROOT`).
       ]]></field>
       <error type="Window"><![CDATA[
 The specified `focus` window does not exist.
