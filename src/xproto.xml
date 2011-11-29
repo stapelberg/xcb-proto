@@ -969,7 +969,7 @@ Must be zero if the `class` is `InputOnly` or a `xcb_match_error_t` occurs.
       <field name="y"><![CDATA[The Y coordinate of the new window.]]></field>
       <field name="width"><![CDATA[The width of the new window.]]></field>
       <field name="height"><![CDATA[The height of the new window.]]></field>
-      <error type="Color"><![CDATA[
+      <error type="Colormap"><![CDATA[
 TODO: reasons?
       ]]></error>
       <error type="Match"><![CDATA[
@@ -1023,7 +1023,7 @@ example.
       <error type="Access"><![CDATA[
 TODO: reasons?
       ]]></error>
-      <error type="Color"><![CDATA[
+      <error type="Colormap"><![CDATA[
 TODO: reasons?
       ]]></error>
       <error type="Cursor"><![CDATA[
@@ -3999,7 +3999,7 @@ The green value of your color.
       <field name="blue"><![CDATA[
 The blue value of your color.
       ]]></field>
-      <error type="Color"><![CDATA[
+      <error type="Colormap"><![CDATA[
 The specified colormap `cmap` does not exist.
       ]]></error>
     </doc>
