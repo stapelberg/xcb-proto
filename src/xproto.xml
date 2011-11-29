@@ -2044,7 +2044,7 @@ void my_example(xcb_connection *conn, xcb_screen_t *screen, xcb_cursor_t cursor)
 
     if ((reply = xcb_grab_pointer_reply(conn, cookie, NULL))) {
         if (reply->status == XCB_GRAB_STATUS_SUCCESS)
-            printf("successfully grabbedt he pointer\\n");
+            printf("successfully grabbed the pointer\\n");
         free(preply);
     }
 }
