@@ -969,7 +969,7 @@ Must be zero if the `class` is `InputOnly` or a `xcb_match_error_t` occurs.
       <field name="y"><![CDATA[The Y coordinate of the new window.]]></field>
       <field name="width"><![CDATA[The width of the new window.]]></field>
       <field name="height"><![CDATA[The height of the new window.]]></field>
-      <error type="Color"><![CDATA[
+      <error type="Colormap"><![CDATA[
 TODO: reasons?
       ]]></error>
       <error type="Match"><![CDATA[
@@ -1023,7 +1023,7 @@ example.
       <error type="Access"><![CDATA[
 TODO: reasons?
       ]]></error>
-      <error type="Color"><![CDATA[
+      <error type="Colormap"><![CDATA[
 TODO: reasons?
       ]]></error>
       <error type="Cursor"><![CDATA[
@@ -1703,9 +1703,6 @@ The property you want to get (an atom).
       <field name="type"><![CDATA[
 The type of the property you want to get (an atom).
       ]]></field>
-      <field name="type"><![CDATA[
-The type of the property you want to get (an atom).
-      ]]></field>
       <field name="long_offset"><![CDATA[
 Specifies the offset (in 32-bit multiples) in the specified property where the
 data is to be retrieved.
@@ -1746,11 +1743,11 @@ void my_example(xcb_connection *c, xcb_window_t window) {
         int len = xcb_get_property_value_length(reply);
         if (len == 0) {
             printf("TODO\\n");
-	    free(reply);
-	    return;
-	}
-	printf("WM_NAME is %.*s\\n", len,
-	       (char*)xcb_get_property_value(reply));
+            free(reply);
+            return;
+        }
+        printf("WM_NAME is %.*s\\n", len,
+               (char*)xcb_get_property_value(reply));
     }
     free(reply);
 }
@@ -2044,7 +2041,7 @@ void my_example(xcb_connection *conn, xcb_screen_t *screen, xcb_cursor_t cursor)
 
     if ((reply = xcb_grab_pointer_reply(conn, cookie, NULL))) {
         if (reply->status == XCB_GRAB_STATUS_SUCCESS)
-            printf("successfully grabbedt he pointer\\n");
+            printf("successfully grabbed the pointer\\n");
         free(preply);
     }
 }
@@ -2294,7 +2291,7 @@ void my_example(xcb_connection *conn, xcb_screen_t *screen) {
         if (reply->status == XCB_GRAB_STATUS_SUCCESS)
             printf("successfully grabbed the keyboard\\n");
 
-        free(kreply);
+        free(reply);
     }
 }
       ]]></example>
@@ -3999,7 +3996,7 @@ The green value of your color.
       <field name="blue"><![CDATA[
 The blue value of your color.
       ]]></field>
-      <error type="Color"><![CDATA[
+      <error type="Colormap"><![CDATA[
 The specified colormap `cmap` does not exist.
       ]]></error>
     </doc>
