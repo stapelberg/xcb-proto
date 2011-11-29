@@ -1743,11 +1743,11 @@ void my_example(xcb_connection *c, xcb_window_t window) {
         int len = xcb_get_property_value_length(reply);
         if (len == 0) {
             printf("TODO\\n");
-	    free(reply);
-	    return;
-	}
-	printf("WM_NAME is %.*s\\n", len,
-	       (char*)xcb_get_property_value(reply));
+            free(reply);
+            return;
+        }
+        printf("WM_NAME is %.*s\\n", len,
+               (char*)xcb_get_property_value(reply));
     }
     free(reply);
 }
