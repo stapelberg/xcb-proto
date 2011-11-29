@@ -1703,9 +1703,6 @@ The property you want to get (an atom).
       <field name="type"><![CDATA[
 The type of the property you want to get (an atom).
       ]]></field>
-      <field name="type"><![CDATA[
-The type of the property you want to get (an atom).
-      ]]></field>
       <field name="long_offset"><![CDATA[
 Specifies the offset (in 32-bit multiples) in the specified property where the
 data is to be retrieved.
