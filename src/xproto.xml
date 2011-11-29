@@ -2291,7 +2291,7 @@ void my_example(xcb_connection *conn, xcb_screen_t *screen) {
         if (reply->status == XCB_GRAB_STATUS_SUCCESS)
             printf("successfully grabbed the keyboard\\n");
 
-        free(kreply);
+        free(reply);
     }
 }
       ]]></example>
