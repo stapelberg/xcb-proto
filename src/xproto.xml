@@ -794,17 +794,22 @@ authorization from the authors.
     <doc>
       <field name="BackPixmap"><![CDATA[
 Overrides the default background-pixmap. The background pixmap and window must
-have the same root and same depth. Any size pixmap can be use, although some
+have the same root and same depth. Any size pixmap can be used, although some
 sizes may be faster than others.
 
-TODO: xcb_none
+If `XCB_BACK_PIXMAP_NONE` is specified, the window has no defined background.
+The server may fill the contents with the previous screen contents or with
+contents of its own choosing.
+
+If `XCB_BACK_PIXMAP_PARENT_RELATIVE` is specified, the parent's background is
+used, but the window must have the same depth as the parent (or a Match error
+results).   The parent's background is tracked, and the current version is
+used each time the window background is required.
       ]]></field>
       <field name="BackPixel"><![CDATA[
 Overrides `BackPixmap`. A pixmap of undefined size filled with the specified
 background pixel is used for the background. Range-checking is not performed,
 the background pixel is truncated to the appropriate number of bits.
-
-TODO: can xcb_none be used here?
       ]]></field>
       <field name="BorderPixmap"><![CDATA[
 Overrides the default border-pixmap. The border pixmap and window must have the
@@ -951,7 +956,7 @@ The special value `XCB_COPY_FROM_PARENT` means the depth is taken from the
 `parent` window.
       ]]></field>
       <field name="visual"><![CDATA[
-Specifies the new window's visual (TODO: what unit?).
+Specifies the id for the new window's visual.
 
 The special value `XCB_COPY_FROM_PARENT` means the visual is taken from the
 `parent` window.
@@ -1483,8 +1488,9 @@ Retrieves the identifier (xcb_atom_t TODO) for the atom with the specified
 name. Atoms are used in protocols like EWMH, for example to store window titles
 (`_NET_WM_NAME` atom) as property of a window.
 
-If `only_if_exists` is 0, the atom will be created. If `only_if_exists` is 1,
-you will get an error (TODO).
+If `only_if_exists` is 0, the atom will be created if it does not already exist.
+If `only_if_exists` is 1, `XCB_ATOM_NONE` will be returned if the atom does
+not yet exist.
       ]]></description>
       <example><![CDATA[
 /*
@@ -1510,15 +1516,16 @@ The length of the following `name`.
 The name of the atom.
       ]]></field>
       <field name="only_if_exists"><![CDATA[
-Create the atom (0) or return an error (1) if the specified atom does not exist already.
+Return a valid atom id only if the atom already exists.
       ]]></field>
       <error type="Alloc"><![CDATA[
 TODO: reasons?
       ]]></error>
       <error type="Value"><![CDATA[
-TODO: reasons?
+A value other than 0 or 1 was specified for `only_if_exists`.
       ]]></error>
       <see type="program" name="xlsatoms" />
+      <see type="request" name="GetAtomName" />
     </doc>
 
   </request>
