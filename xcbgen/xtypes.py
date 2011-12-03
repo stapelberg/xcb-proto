@@ -590,6 +590,11 @@ class Event(ComplexType):
 
         tmp = elt.get('no-sequence-number')
         self.has_seq = (tmp == None or tmp.lower() == 'false' or tmp == '0')
+
+        self.doc = None
+        for item in list(elt):
+            if item.tag == 'doc':
+                self.doc = Doc(name, item)
             
     def add_opcode(self, opcode, name, main):
         self.opcodes[name] = opcode

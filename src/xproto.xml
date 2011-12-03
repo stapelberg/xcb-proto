@@ -307,6 +307,44 @@ authorization from the authors.
     <field type="CARD16" name="state" mask="KeyButMask" />
     <field type="BOOL" name="same_screen" />
     <pad bytes="1" />
+    <doc>
+      <brief>a key was pressed/released</brief>
+      <field name="detail"><![CDATA[
+The keycode (a number representing a physical key on the keyboard) of the key
+which was pressed.
+      ]]></field>
+      <field name="time"><![CDATA[
+Time when the event was generated (in milliseconds).
+      ]]></field>
+      <field name="root"><![CDATA[
+The root window of `child`.
+      ]]></field>
+      <field name="same_screen"><![CDATA[
+Whether the `event` window is on the same screen as the `root` window.
+      ]]></field>
+      <field name="event_x"><![CDATA[
+If `same_screen` is true, this is the X coordinate relative to the `event`
+window's origin. Otherwise, `event_x` will be set to zero.
+      ]]></field>
+      <field name="event_y"><![CDATA[
+If `same_screen` is true, this is the Y coordinate relative to the `event`
+window's origin. Otherwise, `event_y` will be set to zero.
+      ]]></field>
+      <field name="root_x"><![CDATA[
+The X coordinate of the pointer relative to the `root` window at the time of
+the event.
+      ]]></field>
+      <field name="root_y"><![CDATA[
+The Y coordinate of the pointer relative to the `root` window at the time of
+the event.
+      ]]></field>
+      <field name="state"><![CDATA[
+The logical state of the pointer buttons and modifier keys just prior to the
+event.
+      ]]></field>
+      <see type="request" name="GrabKey" />
+      <see type="request" name="GrabKeyboard" />
+    </doc>
   </event>
 
   <eventcopy name="KeyRelease" number="3" ref="KeyPress" />
@@ -333,6 +371,44 @@ authorization from the authors.
     <field type="CARD16" name="state" mask="KeyButMask" />
     <field type="BOOL" name="same_screen" />
     <pad bytes="1" />
+    <doc>
+      <brief>a mouse button was pressed/released</brief>
+      <field name="detail"><![CDATA[
+The keycode (a number representing a physical key on the keyboard) of the key
+which was pressed.
+      ]]></field>
+      <field name="time"><![CDATA[
+Time when the event was generated (in milliseconds).
+      ]]></field>
+      <field name="root"><![CDATA[
+The root window of `child`.
+      ]]></field>
+      <field name="same_screen"><![CDATA[
+Whether the `event` window is on the same screen as the `root` window.
+      ]]></field>
+      <field name="event_x"><![CDATA[
+If `same_screen` is true, this is the X coordinate relative to the `event`
+window's origin. Otherwise, `event_x` will be set to zero.
+      ]]></field>
+      <field name="event_y"><![CDATA[
+If `same_screen` is true, this is the Y coordinate relative to the `event`
+window's origin. Otherwise, `event_y` will be set to zero.
+      ]]></field>
+      <field name="root_x"><![CDATA[
+The X coordinate of the pointer relative to the `root` window at the time of
+the event.
+      ]]></field>
+      <field name="root_y"><![CDATA[
+The Y coordinate of the pointer relative to the `root` window at the time of
+the event.
+      ]]></field>
+      <field name="state"><![CDATA[
+The logical state of the pointer buttons and modifier keys just prior to the
+event.
+      ]]></field>
+      <see type="request" name="GrabButton" />
+      <see type="request" name="GrabPointer" />
+    </doc>
   </event>
 
   <eventcopy name="ButtonRelease" number="5" ref="ButtonPress" />
@@ -356,6 +432,44 @@ authorization from the authors.
     <field type="CARD16" name="state" mask="KeyButMask" />
     <field type="BOOL" name="same_screen" />
     <pad bytes="1" />
+    <doc>
+      <brief>a key was pressed</brief>
+      <field name="detail"><![CDATA[
+The keycode (a number representing a physical key on the keyboard) of the key
+which was pressed.
+      ]]></field>
+      <field name="time"><![CDATA[
+Time when the event was generated (in milliseconds).
+      ]]></field>
+      <field name="root"><![CDATA[
+The root window of `child`.
+      ]]></field>
+      <field name="same_screen"><![CDATA[
+Whether the `event` window is on the same screen as the `root` window.
+      ]]></field>
+      <field name="event_x"><![CDATA[
+If `same_screen` is true, this is the X coordinate relative to the `event`
+window's origin. Otherwise, `event_x` will be set to zero.
+      ]]></field>
+      <field name="event_y"><![CDATA[
+If `same_screen` is true, this is the Y coordinate relative to the `event`
+window's origin. Otherwise, `event_y` will be set to zero.
+      ]]></field>
+      <field name="root_x"><![CDATA[
+The X coordinate of the pointer relative to the `root` window at the time of
+the event.
+      ]]></field>
+      <field name="root_y"><![CDATA[
+The Y coordinate of the pointer relative to the `root` window at the time of
+the event.
+      ]]></field>
+      <field name="state"><![CDATA[
+The logical state of the pointer buttons and modifier keys just prior to the
+event.
+      ]]></field>
+      <see type="request" name="GrabKey" />
+      <see type="request" name="GrabKeyboard" />
+    </doc>
   </event>
 
   <enum name="NotifyDetail">
