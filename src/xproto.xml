@@ -503,6 +503,34 @@ event.
     <field type="CARD16" name="state" mask="KeyButMask" />
     <field type="BYTE" name="mode" enum="NotifyMode" />
     <field type="BYTE" name="same_screen_focus" />
+    <doc>
+      <brief>the pointer is in a different window</brief>
+      <field name="event"><![CDATA[
+The reconfigured window or its parent, depending on whether `StructureNotify`
+or `SubstructureNotify` was selected.
+      ]]></field>
+      <field name="window"><![CDATA[
+The window that was unmapped.
+      ]]></field>
+      <field name="root"><![CDATA[
+The root window for the final cursor position.
+      ]]></field>
+      <field name="root_x"><![CDATA[
+The pointer X coordinate relative to `root`'s origin at the time of the event.
+      ]]></field>
+      <field name="root_y"><![CDATA[
+The pointer Y coordinate relative to `root`'s origin at the time of the event.
+      ]]></field>
+      <field name="event_x"><![CDATA[
+If `event` is on the same screen as `root`, this is the pointer X coordinate
+relative to the event window's origin.
+      ]]></field>
+      <field name="event_y"><![CDATA[
+If `event` is on the same screen as `root`, this is the pointer Y coordinate
+relative to the event window's origin.
+      ]]></field>
+      <field name="mode" />
+    </doc>
   </event>
 
   <eventcopy name="LeaveNotify" number="8" ref="EnterNotify" />
@@ -512,6 +540,16 @@ event.
     <field type="WINDOW" name="event" />
     <field type="BYTE" name="mode" enum="NotifyMode" />
     <pad bytes="3" />
+    <doc>
+      <brief>NOT YET DOCUMENTED</brief>
+      <field name="event"><![CDATA[
+The window on which the focus event was generated. This is the window used by
+the X server to report the event.
+      ]]></field>
+      <!-- enum documentation is sufficient -->
+      <field name="detail" />
+      <field name="mode" />
+    </doc>
   </event>
 
   <eventcopy name="FocusOut" number="10" ref="FocusIn" />
@@ -529,6 +567,32 @@ event.
     <field type="CARD16" name="height" />
     <field type="CARD16" name="count" />
     <pad bytes="2" />
+    <doc>
+      <brief>NOT YET DOCUMENTED</brief>
+      <field name="window"><![CDATA[
+The exposed (damaged) window.
+      ]]></field>
+      <field name="x"><![CDATA[
+The X coordinate of the left-upper corner of the exposed rectangle, relative to
+the `window`'s origin.
+      ]]></field>
+      <field name="y"><![CDATA[
+The Y coordinate of the left-upper corner of the exposed rectangle, relative to
+the `window`'s origin.
+      ]]></field>
+      <field name="width"><![CDATA[
+The width of the exposed rectangle.
+      ]]></field>
+      <field name="height"><![CDATA[
+The height of the exposed rectangle.
+      ]]></field>
+      <field name="count"><![CDATA[
+The amount of `Expose` events following this one. Simple applications that do
+not want to optimize redisplay by distinguishing between subareas of its window
+can just ignore all Expose events with nonzero counts and perform full
+redisplays on events with zero counts.
+      ]]></field>
+    </doc>
   </event>
 
   <event name="GraphicsExposure" number="13">
@@ -582,6 +646,17 @@ event.
     <pad bytes="1" />
     <field type="WINDOW" name="event" />
     <field type="WINDOW" name="window" />
+    <doc>
+      <brief>a window is destroyed</brief>
+      <field name="event"><![CDATA[
+The reconfigured window or its parent, depending on whether `StructureNotify`
+or `SubstructureNotify` was selected.
+      ]]></field>
+      <field name="window"><![CDATA[
+The window that is destroyed.
+      ]]></field>
+      <see type="request" name="DestroyWindow" />
+    </doc>
   </event>
 
   <event name="UnmapNotify" number="18">
@@ -590,6 +665,21 @@ event.
     <field type="WINDOW" name="window" />
     <field type="BOOL" name="from_configure" />
     <pad bytes="3" />
+    <doc>
+      <brief>a window is unmapped</brief>
+      <field name="event"><![CDATA[
+The reconfigured window or its parent, depending on whether `StructureNotify`
+or `SubstructureNotify` was selected.
+      ]]></field>
+      <field name="window"><![CDATA[
+The window that was unmapped.
+      ]]></field>
+      <field name="from_configure"><![CDATA[
+Set to 1 if the event was generated as a result of a resizing of the window's
+parent when `window` had a win_gravity of `UnmapGravity`.
+      ]]></field>
+      <see type="request" name="UnmapWindow" />
+    </doc>
   </event>
 
   <event name="MapNotify" number="19">
@@ -598,12 +688,36 @@ event.
     <field type="WINDOW" name="window" />
     <field type="BOOL" name="override_redirect" />
     <pad bytes="3" />
+    <doc>
+      <brief>a window was mapped</brief>
+      <field name="event"><![CDATA[
+The window which was mapped or its parent, depending on whether
+`StructureNotify` or `SubstructureNotify` was selected.
+      ]]></field>
+      <field name="window"><![CDATA[
+The window that was mapped.
+      ]]></field>
+      <field name="override_redirect"><![CDATA[
+Window managers should ignore this window if `override_redirect` is 1.
+      ]]></field>
+      <see type="request" name="MapWindow" />
+    </doc>
   </event>
 
   <event name="MapRequest" number="20">
     <pad bytes="1" />
     <field type="WINDOW" name="parent" />
     <field type="WINDOW" name="window" />
+    <doc>
+      <brief>window wants to be mapped</brief>
+      <field name="parent"><![CDATA[
+The parent of `window`.
+      ]]></field>
+      <field name="window"><![CDATA[
+The window to be mapped.
+      ]]></field>
+      <see type="request" name="MapWindow" />
+    </doc>
   </event>
 
   <event name="ReparentNotify" number="21">
@@ -629,6 +743,42 @@ event.
     <field type="CARD16" name="border_width" />
     <field type="BOOL" name="override_redirect" />
     <pad bytes="1" />
+    <doc>
+      <brief>NOT YET DOCUMENTED</brief>
+      <field name="event"><![CDATA[
+The reconfigured window or its parent, depending on whether `StructureNotify`
+or `SubstructureNotify` was selected.
+      ]]></field>
+      <field name="window"><![CDATA[
+The window whose size, position, border, and/or stacking order was changed.
+      ]]></field>
+      <field name="above_sibling"><![CDATA[
+If `XCB_NONE`, the `window` is on the bottom of the stack with respect to
+sibling windows. However, if set to a sibling window, the `window` is placed on
+top of this sibling window.
+      ]]></field>
+      <field name="x"><![CDATA[
+The X coordinate of the upper-left outside corner of `window`, relative to the
+parent window's origin.
+      ]]></field>
+      <field name="y"><![CDATA[
+The Y coordinate of the upper-left outside corner of `window`, relative to the
+parent window's origin.
+      ]]></field>
+      <field name="width"><![CDATA[
+The inside width of `window`, not including the border.
+      ]]></field>
+      <field name="height"><![CDATA[
+The inside height of `window`, not including the border.
+      ]]></field>
+      <field name="border_width"><![CDATA[
+The border width of `window`.
+      ]]></field>
+      <field name="override_redirect"><![CDATA[
+Window managers should ignore this window if `override_redirect` is 1.
+      ]]></field>
+      <see type="request" name="FreeColormap" />
+    </doc>
   </event>
 
   <event name="ConfigureRequest" number="23">
@@ -662,6 +812,14 @@ event.
   <enum name="Place">
     <item name="OnTop">   <value>0</value></item>
     <item name="OnBottom"><value>1</value></item>
+    <doc>
+      <field name="OnTop"><![CDATA[
+The window is now on top of all siblings.
+      ]]></field>
+      <field name="OnBottom"><![CDATA[
+The window is now below all siblings.
+      ]]></field>
+    </doc>
   </enum>
 
   <event name="CirculateNotify" number="26">
@@ -671,6 +829,19 @@ event.
     <pad bytes="4" />
     <field type="BYTE" name="place" enum="Place" />
     <pad bytes="3" />
+    <doc>
+      <brief>NOT YET DOCUMENTED</brief>
+      <field name="event"><![CDATA[
+Either the restacked window or its parent, depending on whether
+`StructureNotify` or `SubstructureNotify` was selected.
+      ]]></field>
+      <field name="window"><![CDATA[
+The restacked window.
+      ]]></field>
+      <!-- the enum doc is sufficient -->
+      <field name="place" />
+      <see type="request" name="CirculateWindow" />
+    </doc>
   </event>
 
   <eventcopy name="CirculateRequest" number="27" ref="CirculateNotify" />
@@ -687,6 +858,21 @@ event.
     <field type="TIMESTAMP" name="time" />
     <field type="BYTE" name="state" enum="Property" />
     <pad bytes="3" />
+    <doc>
+      <brief>a window property changed</brief>
+      <field name="window"><![CDATA[
+The window whose associated property was changed.
+      ]]></field>
+      <field name="atom"><![CDATA[
+The property's atom, to indicate which property was changed.
+      ]]></field>
+      <field name="time"><![CDATA[
+A timestamp of the server time when the property was changed.
+      ]]></field>
+      <!-- enum documentation is sufficient -->
+      <field name="state" />
+      <see type="request" name="ChangeProperty" />
+    </doc>
   </event>
 
   <event name="SelectionClear" number="29">
@@ -795,6 +981,14 @@ event.
   <enum name="ColormapState">
     <item name="Uninstalled"><value>0</value></item>
     <item name="Installed">  <value>1</value></item>
+    <doc>
+      <field name="Uninstalled"><![CDATA[
+The colormap was uninstalled.
+      ]]></field>
+      <field name="Installed"><![CDATA[
+The colormap was installed.
+      ]]></field>
+    </doc>
   </enum>
 
   <enum name="Colormap">
@@ -808,6 +1002,22 @@ event.
     <field type="BOOL" name="new" />
     <field type="BYTE" name="state" enum="ColormapState" />
     <pad bytes="2" />
+    <doc>
+      <brief>the colormap for some window changed</brief>
+      <field name="window"><![CDATA[
+The window whose associated colormap is changed, installed or uninstalled.
+      ]]></field>
+      <field name="colormap"><![CDATA[
+The colormap which is changed, installed or uninstalled. This is `XCB_NONE`
+when the colormap is changed by a call to `FreeColormap`.
+      ]]></field>
+      <field name="_new"><![CDATA[
+Indicates whether the colormap was changed (1) or installed/uninstalled (0).
+      ]]></field>
+      <!-- enum doc is sufficient -->
+      <field name="state" />
+      <see type="request" name="FreeColormap" />
+    </doc>
   </event>
 
   <union name="ClientMessageData">
@@ -823,6 +1033,26 @@ event.
     <field type="WINDOW" name="window" />
     <field type="ATOM" name="type" />
     <field type="ClientMessageData" name="data" />
+    <doc>
+      <brief>NOT YET DOCUMENTED</brief>
+      <description><![CDATA[
+This event represents a ClientMessage, sent by another X11 client. An example
+is a client sending the `_NET_WM_STATE` ClientMessage to the root window
+to indicate the fullscreen window state, effectively requesting that the window
+manager puts it into fullscreen mode.
+      ]]></description>
+      <field name="format"><![CDATA[
+Specifies how to interpret `data`. Can be either 8, 16 or 32.
+      ]]></field>
+      <field name="type"><![CDATA[
+An atom which indicates how the data should be interpreted by the receiving
+client.
+      ]]></field>
+      <field name="data"><![CDATA[
+The data itself (20 bytes max).
+      ]]></field>
+      <see type="request" name="SendEvent" />
+    </doc>
   </event>
 
   <enum name="Mapping">
@@ -837,6 +1067,17 @@ event.
     <field type="KEYCODE" name="first_keycode" />
     <field type="CARD8" name="count" />
     <pad bytes="1" />
+    <doc>
+      <brief>keyboard mapping changed</brief>
+      <!-- enum documentation is sufficient -->
+      <field name="request" />
+      <field name="first_keycode"><![CDATA[
+The first number in the range of the altered mapping.
+      ]]></field>
+      <field name="count"><![CDATA[
+The number of keycodes altered.
+      ]]></field>
+    </doc>
   </event>
 
 
