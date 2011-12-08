@@ -1796,10 +1796,6 @@ TODO: reasons?
 Gets the root window ID, parent window ID and list of children windows for the
 specified `window`.
       ]]></description>
-      <field name="window"><![CDATA[
-The `window` to query.
-      ]]></field>
-      <see type="program" name="xwininfo" />
       <example><![CDATA[
 /*
  * Displays the root, parent and children of the specified window.
@@ -1822,6 +1818,10 @@ void my_example(xcb_connection *conn, xcb_window_t window) {
     }
 }
       ]]></example>
+      <field name="window"><![CDATA[
+The `window` to query.
+      ]]></field>
+      <see type="program" name="xwininfo" />
     </doc>
   </request>
 
@@ -1944,6 +1944,23 @@ example the window title (`WM_NAME`) or its minimum size (`WM_NORMAL_HINTS`).
 Protocols such as EWMH also use properties - for example EWMH defines the
 window title, encoded as UTF-8 string, in the `_NET_WM_NAME` property.
       ]]></description>
+      <example><![CDATA[
+/*
+ * Sets the WM_NAME property of the window to "XCB Example".
+ *
+ */
+void my_example(xcb_connection *conn, xcb_window_t window) {
+    xcb_change_property(conn,
+        XCB_PROP_MODE_REPLACE,
+        window,
+        XCB_ATOM_WM_NAME,
+        XCB_ATOM_STRING,
+        8,
+        strlen("XCB Example"),
+        "XCB Example");
+    xcb_flush(conn);
+}
+      ]]></example>
       <field name="window"><![CDATA[
 The window whose property you want to change.
       ]]></field>
@@ -1983,26 +2000,7 @@ The X server could not store the property (no memory?).
       ]]></error>
       <see type="request" name="InternAtom" />
       <see type="program" name="xprop" />
-      <example><![CDATA[
-/*
- * Sets the WM_NAME property of the window to "XCB Example".
- *
- */
-void my_example(xcb_connection *conn, xcb_window_t window) {
-    xcb_change_property(conn,
-        XCB_PROP_MODE_REPLACE,
-        window,
-        XCB_ATOM_WM_NAME,
-        XCB_ATOM_STRING,
-        8,
-        strlen("XCB Example"),
-        "XCB Example");
-    xcb_flush(conn);
-}
-      ]]></example>
-
     </doc>
-
   </request>
 
   <request name="DeleteProperty" opcode="19">
@@ -2052,6 +2050,34 @@ TODO: talk about `delete`
 
 TODO: talk about the offset/length thing. what's a valid use case?
       ]]></description>
+      <example><![CDATA[
+/*
+ * Prints the WM_NAME property of the window.
+ *
+ */
+void my_example(xcb_connection *c, xcb_window_t window) {
+    xcb_get_property_cookie_t cookie;
+    xcb_get_property_reply_t *reply;
+
+    /* These atoms are predefined in the X11 protocol. */
+    xcb_atom_t property = XCB_ATOM_WM_NAME;
+    xcb_atom_t type = XCB_ATOM_STRING;
+
+    // TODO: a reasonable long_length for WM_NAME?
+    cookie = xcb_get_property(c, 0, window, property, type, 0, 0);
+    if ((reply = xcb_get_property_reply(c, cookie, NULL))) {
+        int len = xcb_get_property_value_length(reply);
+        if (len == 0) {
+            printf("TODO\\n");
+            free(reply);
+            return;
+        }
+        printf("WM_NAME is %.*s\\n", len,
+               (char*)xcb_get_property_value(reply));
+    }
+    free(reply);
+}
+      ]]></example>
       <field name="window"><![CDATA[
 The window whose property you want to get.
       ]]></field>
@@ -2086,35 +2112,6 @@ resulting in a byte offset of 4).
       ]]></error>
       <see type="request" name="InternAtom" />
       <see type="program" name="xprop" />
-      <example><![CDATA[
-/*
- * Prints the WM_NAME property of the window.
- *
- */
-void my_example(xcb_connection *c, xcb_window_t window) {
-    xcb_get_property_cookie_t cookie;
-    xcb_get_property_reply_t *reply;
-
-    /* These atoms are predefined in the X11 protocol. */
-    xcb_atom_t property = XCB_ATOM_WM_NAME;
-    xcb_atom_t type = XCB_ATOM_STRING;
-
-    // TODO: a reasonable long_length for WM_NAME?
-    cookie = xcb_get_property(c, 0, window, property, type, 0, 0);
-    if ((reply = xcb_get_property_reply(c, cookie, NULL))) {
-        int len = xcb_get_property_value_length(reply);
-        if (len == 0) {
-            printf("TODO\\n");
-            free(reply);
-            return;
-        }
-        printf("WM_NAME is %.*s\\n", len,
-               (char*)xcb_get_property_value(reply));
-    }
-    free(reply);
-}
-      ]]></example>
-
     </doc>
   </request>
 
@@ -2224,6 +2221,36 @@ so that the X server can correctly byte-swap the contents as necessary. The
 contents of `event` are otherwise unaltered and unchecked except for the
 `send_event` field which is forced to 'true'.
       ]]></description>
+      <example><![CDATA[
+/*
+ * Tell the given window that it was configured to a size of 800x600 pixels.
+ *
+ */
+void my_example(xcb_connection_t *conn, xcb_window_t window) {
+    /* Every X11 event is 32 bytes long. Therefore, XCB will copy 32 bytes.
+     * In order to properly initialize these bytes, we allocate 32 bytes even
+     * though we only need less for an xcb_configure_notify_event_t */
+    xcb_configure_notify_event_t *event = calloc(32, 1);
+
+    event->event = window;
+    event->window = window;
+    event->response_type = XCB_CONFIGURE_NOTIFY;
+
+    event->x = 0;
+    event->y = 0;
+    event->width = 800;
+    event->height = 600;
+
+    event->border_width = 0;
+    event->above_sibling = XCB_NONE;
+    event->override_redirect = false;
+
+    xcb_send_event(conn, false, window, XCB_EVENT_MASK_STRUCTURE_NOTIFY,
+                   (char*)event);
+    xcb_flush(conn);
+    free(event);
+}
+      ]]></example>
       <field name="destination"><![CDATA[
 The window to send this event to. Every client which selects any event within
 `event_mask` on `destination` will get the event.
@@ -2257,36 +2284,6 @@ The specified `destination` window does not exist.
       <error type="Value"><![CDATA[
 The given `event` is neither a core event nor an event defined by an extension.
       ]]></error>
-      <example><![CDATA[
-/*
- * Tell the given window that it was configured to a size of 800x600 pixels.
- *
- */
-void my_example(xcb_connection_t *conn, xcb_window_t window) {
-    /* Every X11 event is 32 bytes long. Therefore, XCB will copy 32 bytes.
-     * In order to properly initialize these bytes, we allocate 32 bytes even
-     * though we only need less for an xcb_configure_notify_event_t */
-    xcb_configure_notify_event_t *event = calloc(32, 1);
-
-    event->event = window;
-    event->window = window;
-    event->response_type = XCB_CONFIGURE_NOTIFY;
-
-    event->x = 0;
-    event->y = 0;
-    event->width = 800;
-    event->height = 600;
-
-    event->border_width = 0;
-    event->above_sibling = XCB_NONE;
-    event->override_redirect = false;
-
-    xcb_send_event(conn, false, window, XCB_EVENT_MASK_STRUCTURE_NOTIFY,
-                   (char*)event);
-    xcb_flush(conn);
-    free(event);
-}
-      ]]></example>
       <see type="event" name="ConfigureNotify" />
     </doc>
   </request>
@@ -2336,6 +2333,34 @@ Keyboard event processing continues normally.
 Actively grabs control of the pointer. Further pointer events are reported only to the grabbing client. Overrides any active pointer grab by this client.
 
       ]]></description>
+      <example><![CDATA[
+/*
+ * Grabs the pointer actively
+ *
+ */
+void my_example(xcb_connection *conn, xcb_screen_t *screen, xcb_cursor_t cursor) {
+    xcb_grab_pointer_cookie_t cookie;
+    xcb_grab_pointer_reply_t *reply;
+
+    cookie = xcb_grab_pointer(
+        conn,
+        false,               /* get all pointer events specified by the following mask */
+        screen->root,        /* grab the root window */
+        XCB_NONE,            /* which events to let through */
+        XCB_GRAB_MODE_ASYNC, /* pointer events should continue as normal */
+        XCB_GRAB_MODE_ASYNC, /* keyboard mode */
+        XCB_NONE,            /* confine_to = in which window should the cursor stay */
+        cursor,              /* we change the cursor to whatever the user wanted */
+        XCB_CURRENT_TIME
+    );
+
+    if ((reply = xcb_grab_pointer_reply(conn, cookie, NULL))) {
+        if (reply->status == XCB_GRAB_STATUS_SUCCESS)
+            printf("successfully grabbed the pointer\\n");
+        free(preply);
+    }
+}
+      ]]></example>
       <field name="event_mask"><![CDATA[
 Specifies which pointer events are reported to the client.
 
@@ -2380,34 +2405,7 @@ TODO: reasons?
       <error type="Window"><![CDATA[
 The specified `window` does not exist.
       ]]></error>
-      <example><![CDATA[
-/*
- * Grabs the pointer actively
- *
- */
-void my_example(xcb_connection *conn, xcb_screen_t *screen, xcb_cursor_t cursor) {
-    xcb_grab_pointer_cookie_t cookie;
-    xcb_grab_pointer_reply_t *reply;
 
-    cookie = xcb_grab_pointer(
-        conn,
-        false,               /* get all pointer events specified by the following mask */
-        screen->root,        /* grab the root window */
-        XCB_NONE,            /* which events to let through */
-        XCB_GRAB_MODE_ASYNC, /* pointer events should continue as normal */
-        XCB_GRAB_MODE_ASYNC, /* keyboard mode */
-        XCB_NONE,            /* confine_to = in which window should the cursor stay */
-        cursor,              /* we change the cursor to whatever the user wanted */
-        XCB_CURRENT_TIME
-    );
-
-    if ((reply = xcb_grab_pointer_reply(conn, cookie, NULL))) {
-        if (reply->status == XCB_GRAB_STATUS_SUCCESS)
-            printf("successfully grabbed the pointer\\n");
-        free(preply);
-    }
-}
-      ]]></example>
       <see type="request" name="GrabKeyboard" />
     </doc>
   </request>
@@ -2609,29 +2607,7 @@ is frozen by an active grab of another client, `GrabFrozen` is returned. If the
 specified `time` is earlier than the last-keyboard-grab time or later than the
 current X server time, `GrabInvalidTime` is returned. Otherwise, the
 last-keyboard-grab time is set to the specified time.
-     ]]></description>
-      <field name="owner_events"><![CDATA[
-If 1, the `grab_window` will still get the pointer events. If 0, events are not
-reported to the `grab_window`.
-      ]]></field>
-      <field name="grab_window"><![CDATA[
-Specifies the window on which the pointer should be grabbed.
-      ]]></field>
-      <field name="time"><![CDATA[
-Timestamp to avoid race conditions when running X over the network.
-
-The special value `XCB_CURRENT_TIME` will be replaced with the current server
-time.
-      ]]></field>
-      <!-- the enum doc is sufficient. -->
-      <field name="pointer_mode" />
-      <field name="keyboard_mode" />
-      <error type="Value"><![CDATA[
-TODO: reasons?
-      ]]></error>
-      <error type="Window"><![CDATA[
-The specified `window` does not exist.
-      ]]></error>
+      ]]></description>
       <example><![CDATA[
 /*
  * Grabs the keyboard actively
@@ -2658,6 +2634,28 @@ void my_example(xcb_connection *conn, xcb_screen_t *screen) {
     }
 }
       ]]></example>
+      <field name="owner_events"><![CDATA[
+If 1, the `grab_window` will still get the pointer events. If 0, events are not
+reported to the `grab_window`.
+      ]]></field>
+      <field name="grab_window"><![CDATA[
+Specifies the window on which the pointer should be grabbed.
+      ]]></field>
+      <field name="time"><![CDATA[
+Timestamp to avoid race conditions when running X over the network.
+
+The special value `XCB_CURRENT_TIME` will be replaced with the current server
+time.
+      ]]></field>
+      <!-- the enum doc is sufficient. -->
+      <field name="pointer_mode" />
+      <field name="keyboard_mode" />
+      <error type="Value"><![CDATA[
+TODO: reasons?
+      ]]></error>
+      <error type="Window"><![CDATA[
+The specified `window` does not exist.
+      ]]></error>
       <see type="request" name="GrabPointer" />
     </doc>
   </request>
@@ -3713,6 +3711,28 @@ The X server could not allocate the requested resources (no memory?).
       <description><![CDATA[
 Changes the components specified by `value_mask` for the specified graphics context.
       ]]></description>
+      <example><![CDATA[
+/*
+ * Changes the foreground color component of the specified graphics context.
+ *
+ */
+void my_example(xcb_connection *conn, xcb_gcontext_t gc, uint32_t fg, uint32_t bg) {
+    /* C99 allows us to use a compact way of changing a single component: */
+    xcb_change_gc(conn, gc, XCB_GC_FOREGROUND, (uint32_t[]){ fg });
+
+    /* The more explicit way. Beware that the order of values is important! */
+    uint32_t mask = 0;
+    mask |= XCB_GC_FOREGROUND;
+    mask |= XCB_GC_BACKGROUND;
+
+    uint32_t values[] = {
+        fg,
+        bg
+    };
+    xcb_change_gc(conn, gc, mask, values);
+    xcb_flush(conn);
+}
+      ]]></example>
       <field name="gc"><![CDATA[
 The graphics context to change.
       ]]></field>
@@ -3741,28 +3761,6 @@ TODO: reasons?
       <error type="Alloc"><![CDATA[
 The X server could not allocate the requested resources (no memory?).
       ]]></error>
-      <example><![CDATA[
-/*
- * Changes the foreground color component of the specified graphics context.
- *
- */
-void my_example(xcb_connection *conn, xcb_gcontext_t gc, uint32_t fg, uint32_t bg) {
-    /* C99 allows us to use a compact way of changing a single component: */
-    xcb_change_gc(conn, gc, XCB_GC_FOREGROUND, (uint32_t[]){ fg });
-
-    /* The more explicit way. Beware that the order of values is important! */
-    uint32_t mask = 0;
-    mask |= XCB_GC_FOREGROUND;
-    mask |= XCB_GC_BACKGROUND;
-
-    uint32_t values[] = {
-        fg,
-        bg
-    };
-    xcb_change_gc(conn, gc, mask, values);
-    xcb_flush(conn);
-}
-      ]]></example>
     </doc>
   </request>
 
@@ -3929,6 +3927,17 @@ intersect, the intersecting pixels are drawn multiple times. If wide lines
 intersect, the intersecting pixels are drawn only once, as though the entire
 request were a single, filled shape.
       ]]></description>
+      <example><![CDATA[
+/*
+ * Draw a straight line.
+ *
+ */
+void my_example(xcb_connection *conn, xcb_drawable_t drawable, xcb_gcontext_t gc) {
+    xcb_poly_line(conn, XCB_COORD_MODE_ORIGIN, drawable, gc, 2,
+                  (xcb_point_t[]) { {10, 10}, {100, 10} });
+    xcb_flush(conn);
+}
+      ]]></example>
       <field name="drawable"><![CDATA[
 The drawable to draw the line(s) on.
       ]]></field>
@@ -3955,17 +3964,6 @@ TODO: reasons?
       <error type="Value"><![CDATA[
 TODO: reasons?
       ]]></error>
-      <example><![CDATA[
-/*
- * Draw a straight line.
- *
- */
-void my_example(xcb_connection *conn, xcb_drawable_t drawable, xcb_gcontext_t gc) {
-    xcb_poly_line(conn, XCB_COORD_MODE_ORIGIN, drawable, gc, 2,
-                  (xcb_point_t[]) { {10, 10}, {100, 10} });
-    xcb_flush(conn);
-}
-      ]]></example>
     </doc>
   </request>
 
