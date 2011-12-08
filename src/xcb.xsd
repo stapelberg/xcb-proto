@@ -201,7 +201,9 @@ authorization from the authors.
 
   <!-- Type for a packet structure -->
   <xsd:complexType name="packet-struct">
-    <xsd:group ref="fields" minOccurs="0" maxOccurs="unbounded" />
+    <xsd:sequence>
+      <xsd:group ref="fields" minOccurs="0" maxOccurs="unbounded" />
+    </xsd:sequence>
     <xsd:attribute name="name" type="xsd:string" use="required" />
     <xsd:attribute name="number" type="xsd:integer" use="required" />
   </xsd:complexType>
