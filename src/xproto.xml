@@ -1430,6 +1430,41 @@ The specified `window` does not exist.
       <field type="CARD32" name="your_event_mask" mask="EventMask" />
       <field type="CARD16" name="do_not_propagate_mask" mask="EventMask" />
       <pad bytes="2" />
+      <doc>
+        <field name="override_redirect"><![CDATA[
+Window managers should ignore this window if `override_redirect` is 1.
+        ]]></field>
+        <field name="visual"><![CDATA[
+The associated visual structure of `window`.
+        ]]></field>
+        <field name="backing_planes"><![CDATA[
+Planes to be preserved if possible.
+        ]]></field>
+        <field name="backing_pixel"><![CDATA[
+Value to be used when restoring planes.
+        ]]></field>
+        <field name="save_under"><![CDATA[
+Boolean, should bits under be saved?
+        ]]></field>
+        <field name="colormap"><![CDATA[
+Color map to be associated with window.
+        ]]></field>
+        <field name="all_event_masks"><![CDATA[
+Set of events all people have interest in.
+        ]]></field>
+        <field name="your_event_mask"><![CDATA[
+My event mask.
+        ]]></field>
+        <field name="do_not_propagate_mask"><![CDATA[
+Set of events that should not propagate.
+        ]]></field>
+        <!-- enum documentation is sufficient for these fields -->
+        <field name="backing_store" />
+        <field name="class" />
+        <field name="bit_gravity" />
+        <field name="win_gravity" />
+        <field name="map_state" />
+      </doc>
     </reply>
     <doc>
       <brief>Gets window attributes</brief>
@@ -1741,6 +1776,33 @@ The specified `direction` is invalid.
       <field type="CARD16" name="height" />
       <field type="CARD16" name="border_width" />
       <pad bytes="2" />
+      <doc>
+      <field name="root"><![CDATA[
+Root window of the screen containing `drawable`.
+      ]]></field>
+      <field name="x"><![CDATA[
+The X coordinate of `drawable`. If `drawable` is a window, the coordinate
+specifies the upper-left outer corner relative to its parent's origin. If
+`drawable` is a pixmap, the X coordinate is always 0.
+      ]]></field>
+      <field name="y"><![CDATA[
+The Y coordinate of `drawable`. If `drawable` is a window, the coordinate
+specifies the upper-left outer corner relative to its parent's origin. If
+`drawable` is a pixmap, the Y coordinate is always 0.
+      ]]></field>
+      <field name="width"><![CDATA[
+The width of `drawable`.
+      ]]></field>
+      <field name="height"><![CDATA[
+The height of `drawable`.
+      ]]></field>
+      <field name="border_width"><![CDATA[
+The border width (in pixels).
+      ]]></field>
+      <field name="depth"><![CDATA[
+The depth of the drawable (bits per pixel for the object).
+      ]]></field>
+      </doc>
     </reply>
     <doc>
       <brief>Get current window geometry</brief>
@@ -1789,12 +1851,23 @@ TODO: reasons?
       <list type="WINDOW" name="children">
         <fieldref>children_len</fieldref>
       </list>
+      <doc>
+        <field name="root"><![CDATA[
+The root window of `window`.
+        ]]></field>
+        <field name="parent"><![CDATA[
+The parent window of `window`.
+        ]]></field>
+        <field name="children_len"><![CDATA[
+The number of child windows.
+        ]]></field>
+      </doc>
     </reply>
     <doc>
       <brief>query the window tree</brief>
       <description><![CDATA[
 Gets the root window ID, parent window ID and list of children windows for the
-specified `window`.
+specified `window`. The children are listed in bottom-to-top stacking order.
       ]]></description>
       <example><![CDATA[
 /*
@@ -1860,8 +1933,8 @@ void my_example(xcb_connection *c) {
     /* ... do other work here if possible ... */
     if ((reply = xcb_intern_atom_reply(c, cookie, NULL))) {
         printf("The _NET_WM_NAME atom has ID %u\n", reply->atom);
+        free(reply);
     }
-    free(reply);
 }
       ]]></example>
       <field name="name_len"><![CDATA[
@@ -2027,14 +2100,32 @@ The X server could not store the property (no memory?).
       <field type="CARD32" name="value_len" />
       <pad bytes="12" />
       <list type="void" name="value">
-	<op op="*">
-	  <fieldref>value_len</fieldref>
-	  <op op="/">
-	    <fieldref>format</fieldref>
-	    <value>8</value>
-	  </op>
-	</op>
+        <op op="*">
+          <fieldref>value_len</fieldref>
+          <op op="/">
+            <fieldref>format</fieldref>
+            <value>8</value>
+          </op>
+        </op>
       </list>
+      <doc>
+      <field name="format"><![CDATA[
+Specifies whether the data should be viewed as a list of 8-bit, 16-bit, or
+32-bit quantities. Possible values are 8, 16, and 32. This information allows
+the X server to correctly perform byte-swap operations as necessary.
+      ]]></field>
+      <field name="type"><![CDATA[
+The actual type of the property (an atom).
+      ]]></field>
+      <field name="bytes_after"><![CDATA[
+The number of bytes remaining to be read in the property if a partial read was
+performed.
+      ]]></field>
+      <field name="value_len"><![CDATA[
+The length of value. You should use the corresponding accessor instead of this
+field.
+      ]]></field>
+      </doc>
     </reply>
     <doc>
       <brief>Gets a window property</brief>
@@ -2081,7 +2172,7 @@ void my_example(xcb_connection *c, xcb_window_t window) {
       <field name="window"><![CDATA[
 The window whose property you want to get.
       ]]></field>
-      <field name="_delete"><![CDATA[
+      <field name="delete"><![CDATA[
 Whether the property should actually be deleted. For deleting a property, the
 specified `type` has to match the actual property type.
       ]]></field>
@@ -2173,6 +2264,11 @@ time.
     <reply>
       <pad bytes="1" />
       <field type="WINDOW" name="owner" altenum="Window" />
+      <doc>
+        <field name="owner"><![CDATA[
+The current selection owner window.
+        ]]></field>
+      </doc>
     </reply>
     <doc>
       <brief>Gets the owner of a selection</brief>
@@ -2916,6 +3012,41 @@ You specified an invalid `mode`.
       <field type="INT16" name="win_y" />
       <field type="CARD16" name="mask" mask="KeyButMask" />
       <pad bytes="2" />
+      <doc>
+        <field name="same_screen"><![CDATA[
+If `same_screen` is False, then the pointer is not on the same screen as the
+argument window, `child` is None, and `win_x` and `win_y` are zero. If
+`same_screen` is True, then `win_x` and `win_y` are the pointer coordinates
+relative to the argument window's origin, and child is the child containing the
+pointer, if any.
+        ]]></field>
+        <field name="root"><![CDATA[
+The root window the pointer is logically on.
+        ]]></field>
+        <field name="child"><![CDATA[
+The child window containing the pointer, if any, if `same_screen` is true. If
+`same_screen` is false, `XCB_NONE` is returned.
+        ]]></field>
+        <field name="root_x"><![CDATA[
+The pointer X position, relative to `root`.
+        ]]></field>
+        <field name="root_y"><![CDATA[
+The pointer Y position, relative to `root`.
+        ]]></field>
+        <field name="win_x"><![CDATA[
+The pointer X coordinate, relative to `child`, if `same_screen` is true. Zero
+otherwise.
+        ]]></field>
+        <field name="win_y"><![CDATA[
+The pointer Y coordinate, relative to `child`, if `same_screen` is true. Zero
+otherwise.
+        ]]></field>
+        <field name="mask"><![CDATA[
+The current logical state of the modifier keys and the buttons. Note that the
+logical state of a device (as seen by means of the protocol) may lag the
+physical state if device event processing is frozen.
+        ]]></field>
+      </doc>
     </reply>
     <doc>
       <brief>get pointer coordinates</brief>
@@ -3181,6 +3312,37 @@ No font matches the given `name`.
       <list type="CHARINFO" name="char_infos">
         <fieldref>char_infos_len</fieldref>
       </list>
+      <doc>
+        <field name="min_bounds"><![CDATA[
+minimum bounds over all existing char
+        ]]></field>
+        <field name="max_bounds"><![CDATA[
+maximum bounds over all existing char
+        ]]></field>
+        <field name="min_char_or_byte2"><![CDATA[
+first character
+        ]]></field>
+        <field name="max_char_or_byte2"><![CDATA[
+last character
+        ]]></field>
+        <field name="default_char"><![CDATA[
+char to print for undefined character
+        ]]></field>
+        <field name="properties_len"><![CDATA[
+how many properties there are
+        ]]></field>
+        <field name="all_chars_exist"><![CDATA[
+flag if all characters have nonzero size
+        ]]></field>
+        <field name="font_ascent"><![CDATA[
+baseline to top edge of raster
+        ]]></field>
+        <field name="font_descent"><![CDATA[
+baseline to bottom edge of raster
+        ]]></field>
+        <!-- enum doc is sufficient -->
+        <field name="draw_direction" />
+      </doc>
     </reply>
     <doc>
       <brief>query font metrics</brief>
@@ -3274,6 +3436,11 @@ The specified `font` does not exist.
       <list type="STR" name="names">
         <fieldref>names_len</fieldref>
       </list>
+      <doc>
+        <field name="names_len"><![CDATA[
+The number of font names.
+        ]]></field>
+      </doc>
     </reply>
     <doc>
       <brief>get matching font names</brief>
@@ -3326,6 +3493,45 @@ The maximum number of fonts to be returned.
       <list type="char" name="name">
         <fieldref>name_len</fieldref>
       </list>
+      <doc>
+        <field name="name_len"><![CDATA[
+The number of matched font names.
+        ]]></field>
+        <field name="min_bounds"><![CDATA[
+minimum bounds over all existing char
+        ]]></field>
+        <field name="max_bounds"><![CDATA[
+maximum bounds over all existing char
+        ]]></field>
+        <field name="min_char_or_byte2"><![CDATA[
+first character
+        ]]></field>
+        <field name="max_char_or_byte2"><![CDATA[
+last character
+        ]]></field>
+        <field name="default_char"><![CDATA[
+char to print for undefined character
+        ]]></field>
+        <field name="properties_len"><![CDATA[
+how many properties there are
+        ]]></field>
+        <field name="all_chars_exist"><![CDATA[
+flag if all characters have nonzero size
+        ]]></field>
+        <field name="font_ascent"><![CDATA[
+baseline to top edge of raster
+        ]]></field>
+        <field name="font_descent"><![CDATA[
+baseline to bottom edge of raster
+        ]]></field>
+        <field name="replies_hint"><![CDATA[
+An indication of how many more fonts will be returned. This is only a hint and
+may be larger or smaller than the number of fonts actually returned. A zero
+value does not guarantee that no more fonts will be returned.
+        ]]></field>
+        <!-- enum doc is sufficient -->
+        <field name="draw_direction" />
+      </doc>
     </reply>
     <doc>
       <brief>get matching font names and information</brief>
@@ -4661,6 +4867,20 @@ The specified cursor does not exist.
       <field type="CARD8" name="major_opcode" />
       <field type="CARD8" name="first_event" />
       <field type="CARD8" name="first_error" />
+      <doc>
+        <field name="present"><![CDATA[
+Whether the extension is present on this X11 server.
+        ]]></field>
+        <field name="major_opcode"><![CDATA[
+The major opcode for requests.
+        ]]></field>
+        <field name="first_event"><![CDATA[
+The first event code, if any.
+        ]]></field>
+        <field name="first_error"><![CDATA[
+The first error code, if any.
+        ]]></field>
+      </doc>
     </reply>
     <doc>
       <brief>check if extension is present</brief>
