@@ -524,6 +524,11 @@ class Reply(ComplexType):
     def __init__(self, name, elt):
         ComplexType.__init__(self, name, elt)
         self.is_reply = True
+        self.doc = None
+
+        for child in list(elt):
+            if child.tag == 'doc':
+                self.doc = Doc(name, child)
 
     def resolve(self, module):
         if self.resolved:
