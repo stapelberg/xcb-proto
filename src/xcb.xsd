@@ -267,16 +267,6 @@ authorization from the authors.
     </xsd:sequence>
   </xsd:group>
 
-  <xsd:group name="needs-header-fields">
-    <xsd:sequence>
-      <xsd:element name="needs_header">
-        <xsd:complexType>
-          <xsd:attribute name="name" type="xsd:string" />
-        </xsd:complexType>
-      </xsd:element>
-    </xsd:sequence>
-  </xsd:group>
-
   <xsd:element name="doc">
     <xsd:complexType mixed="true">
       <xsd:sequence>
@@ -286,7 +276,6 @@ authorization from the authors.
         <xsd:group ref="doc-fields" minOccurs="0" maxOccurs="unbounded" />
         <xsd:group ref="error-fields" minOccurs="0" maxOccurs="unbounded" />
         <xsd:group ref="see-fields" minOccurs="0" maxOccurs="unbounded" />
-        <xsd:group ref="needs-header-fields" minOccurs="0" maxOccurs="unbounded" />
       </xsd:sequence>
     </xsd:complexType>
   </xsd:element>

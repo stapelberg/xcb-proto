@@ -319,7 +319,3 @@ Documentation
 <see type="request" name="name" />
 
   A reference to another relevant program, function, request or event.
-
-<needs_header name="xcb.h" />
-
-  Specifies that the manpage should contain #include <xcb/xcb.h>.

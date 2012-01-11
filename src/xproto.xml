@@ -1353,8 +1353,6 @@ The X server could not allocate the requested resources (no memory?).
       <see type="function" name="xcb_generate_id" />
       <see type="request" name="MapWindow" />
       <see type="event" name="CreateNotify" />
-      <!-- XCB_COPY_FROM_PARENT is defined in xcb.h -->
-      <needs_header name="xcb.h" />
     </doc>
 
   </request>

@@ -661,7 +661,6 @@ class Doc(object):
         self.errors = {}
         self.see = {}
         self.example = None
-	self.needs_headers = []
 
         for child in list(elt):
             text = child.text if child.text else ''
@@ -677,8 +676,6 @@ class Doc(object):
                 self.see[child.get('name')] = child.get('type')
             if child.tag == 'example':
                 self.example = text.strip()
-            if child.tag == 'needs_header':
-                self.needs_headers.append(child.get('name'))
 
 
 
